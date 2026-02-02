@@ -8,308 +8,75 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #1a1a1a;
-            color: #e0e0e0;
-            min-height: 100vh;
-            padding: 20px;
-        }
+        body { font-family: -apple-system, sans-serif; background: #1a1a1a; color: #e0e0e0; min-height: 100vh; padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; }
         
-        #auth-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 80vh;
-            text-align: center;
-        }
-        .auth-box {
-            background: #242424;
-            padding: 40px;
-            border-radius: 12px;
-            border: 1px solid #333;
-            width: 100%;
-            max-width: 360px;
-        }
-        .auth-input {
-            width: 100%;
-            padding: 14px;
-            border: 1px solid #333;
-            border-radius: 8px;
-            background: #2a2a2a;
-            color: #fff;
-            font-size: 1rem;
-            margin-bottom: 12px;
-        }
-        .auth-btn {
-            width: 100%;
-            padding: 14px;
-            background: #333;
-            border: none;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 1rem;
-            cursor: pointer;
-            margin-bottom: 12px;
-        }
+        #auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; text-align: center; }
+        .auth-box { background: #242424; padding: 40px; border-radius: 12px; border: 1px solid #333; width: 100%; max-width: 360px; }
+        .auth-input { width: 100%; padding: 14px; border: 1px solid #333; border-radius: 8px; background: #2a2a2a; color: #fff; font-size: 1rem; margin-bottom: 12px; }
+        .auth-btn { width: 100%; padding: 14px; background: #333; border: none; border-radius: 8px; color: #fff; font-size: 1rem; cursor: pointer; margin-bottom: 12px; }
         .auth-error { color: #ef4444; font-size: 0.85rem; display: none; }
         
         #dashboard { display: none; }
-        
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 0;
-            border-bottom: 1px solid #333;
-            margin-bottom: 30px;
-        }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid #333; margin-bottom: 30px; }
         .header-left { display: flex; align-items: center; gap: 16px; }
         h1 { font-size: 1.5rem; font-weight: 600; color: #fff; }
-        .streak { 
-            background: #2a2a2a;
-            padding: 8px 16px; 
-            border-radius: 20px; 
-            font-size: 0.9rem;
-        }
+        .streak { background: #2a2a2a; padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; }
         .streak span { color: #f59e0b; font-weight: 600; }
-        .logout-btn {
-            background: none;
-            border: 1px solid #444;
-            color: #888;
-            padding: 6px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-        }
+        .logout-btn { background: none; border: 1px solid #444; color: #888; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
         
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 30px;
-        }
-        .stat-card {
-            background: #242424;
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid #333;
-            text-align: center;
-        }
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 30px; }
+        .stat-card { background: #242424; border-radius: 12px; padding: 20px; border: 1px solid #333; text-align: center; }
         .stat-card h3 { color: #888; font-size: 0.85rem; margin-bottom: 8px; }
-        .stat-card .value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .stat-card .value input {
-            background: transparent;
-            border: none;
-            color: #fff;
-            font-size: 1.8rem;
-            font-weight: 700;
-            width: 80px;
-            text-align: center;
-        }
+        .stat-card .value { font-size: 1.8rem; font-weight: 700; color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .stat-card .value input { background: transparent; border: none; color: #fff; font-size: 1.8rem; font-weight: 700; width: 80px; text-align: center; }
         .stat-card .value input:focus { outline: none; border-bottom: 1px solid #555; }
-        .stat-btn {
-            background: none;
-            border: 1px solid #444;
-            color: #888;
-            width: 28px;
-            height: 28px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1rem;
-        }
+        .stat-btn { background: none; border: 1px solid #444; color: #888; width: 28px; height: 28px; border-radius: 4px; cursor: pointer; font-size: 1rem; }
         .stat-btn:hover { border-color: #666; color: #fff; }
         
-        .progress-section {
-            background: #242424;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-            border: 1px solid #333;
-        }
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
+        .progress-section { background: #242424; border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid #333; }
+        .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
         .progress-title { font-size: 1.1rem; font-weight: 600; color: #fff; }
         .progress-stats { display: flex; gap: 24px; color: #888; font-size: 0.9rem; }
-        .progress-bar {
-            height: 12px;
-            background: #333;
-            border-radius: 6px;
-            overflow: hidden;
-            margin-bottom: 16px;
-        }
-        .progress-fill {
-            height: 100%;
-            background: #10b981;
-            transition: width 0.3s ease;
-        }
-        .checklist-row {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 12px;
-        }
-        .check-item {
-            background: #2a2a2a;
-            padding: 12px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-        }
+        .progress-bar { height: 12px; background: #333; border-radius: 6px; overflow: hidden; margin-bottom: 16px; }
+        .progress-fill { height: 100%; background: #10b981; transition: width 0.3s ease; }
+        .checklist-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+        .check-item { background: #2a2a2a; padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .check-item.checked { background: #10b981; }
-        .check-item .check {
-            width: 18px;
-            height: 18px;
-            border: 2px solid #444;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        .check-item .check { width: 18px; height: 18px; border: 2px solid #444; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
         .check-item.checked .check { border-color: #fff; background: #fff; }
         .check-item.checked .check::after { content: '✓'; color: #10b981; font-size: 11px; }
         .check-item span { font-size: 0.85rem; }
         .check-item.checked span { text-decoration: line-through; opacity: 0.7; }
         
-        .kanban-section {
-            background: #242424;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-            border: 1px solid #333;
-        }
-        .kanban-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
+        .kanban-section { background: #242424; border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid #333; }
+        .kanban-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .kanban-title { font-size: 1.1rem; font-weight: 600; color: #fff; }
-        .kanban-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-        }
-        .kanban-col {
-            background: #1e1e1e;
-            border-radius: 8px;
-            padding: 16px;
-            min-height: 200px;
-        }
-        .kanban-col h4 {
-            color: #888;
-            font-size: 0.85rem;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-        }
-        .kanban-add {
-            background: none;
-            border: none;
-            color: #666;
-            cursor: pointer;
-            font-size: 1.2rem;
-        }
+        .kanban-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .kanban-col { background: #1e1e1e; border-radius: 8px; padding: 16px; min-height: 200px; }
+        .kanban-col h4 { color: #888; font-size: 0.85rem; margin-bottom: 12px; display: flex; justify-content: space-between; }
+        .kanban-add { background: none; border: none; color: #666; cursor: pointer; font-size: 1.2rem; }
         .kanban-add:hover { color: #fff; }
-        .kanban-item {
-            background: #2a2a2a;
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            cursor: grab;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        .kanban-item { background: #2a2a2a; padding: 12px; border-radius: 6px; margin-bottom: 8px; cursor: grab; display: flex; justify-content: space-between; align-items: center; }
         .kanban-item:active { cursor: grabbing; }
         .kanban-item span { font-size: 0.9rem; }
-        .kanban-item .delete {
-            background: none;
-            border: none;
-            color: #666;
-            cursor: pointer;
-            font-size: 1rem;
-            opacity: 0;
-        }
+        .kanban-item .delete { background: none; border: none; color: #666; cursor: pointer; font-size: 1rem; opacity: 0; }
         .kanban-item:hover .delete { opacity: 1; }
         .kanban-item .delete:hover { color: #ef4444; }
         
-        .content-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 24px;
-        }
-        .content-card {
-            background: #242424;
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid #333;
-        }
+        .content-section { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+        .content-card { background: #242424; border-radius: 12px; padding: 20px; border: 1px solid #333; }
         .content-card h3 { color: #888; font-size: 0.85rem; margin-bottom: 12px; }
-        .content-card input {
-            width: 100%;
-            background: #2a2a2a;
-            border: 1px solid #333;
-            border-radius: 6px;
-            padding: 12px;
-            color: #fff;
-            font-size: 0.95rem;
-        }
+        .content-card input { width: 100%; background: #2a2a2a; border: 1px solid #333; border-radius: 6px; padding: 12px; color: #fff; font-size: 0.95rem; }
         
-        .task-section {
-            background: #242424;
-            border-radius: 12px;
-            padding: 24px;
-            border: 1px solid #333;
-        }
+        .task-section { background: #242424; border-radius: 12px; padding: 24px; border: 1px solid #333; }
         .task-section h3 { color: #888; font-size: 0.85rem; margin-bottom: 12px; }
-        .task-section input {
-            width: 100%;
-            background: #2a2a2a;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 16px;
-            color: #fff;
-            font-size: 1rem;
-        }
+        .task-section input { width: 100%; background: #2a2a2a; border: 1px solid #333; border-radius: 8px; padding: 16px; color: #fff; font-size: 1rem; }
         
-        .competitor-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            margin-top: 24px;
-        }
-        .competitor-item {
-            background: #242424;
-            border-radius: 8px;
-            padding: 16px;
-            border: 1px solid #333;
-        }
+        .competitor-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 24px; }
+        .competitor-item { background: #242424; border-radius: 8px; padding: 16px; border: 1px solid #333; }
         .competitor-item strong { color: #fff; font-size: 0.9rem; display: block; margin-bottom: 4px; }
-        .competitor-item input {
-            width: 100%;
-            background: #2a2a2a;
-            border: none;
-            color: #888;
-            font-size: 0.8rem;
-            margin-top: 8px;
-        }
+        .competitor-item input { width: 100%; background: #2a2a2a; border: none; color: #888; font-size: 0.8rem; margin-top: 8px; }
         
         @media (max-width: 900px) {
             .stats-row { grid-template-columns: repeat(2, 1fr); }
@@ -341,138 +108,60 @@
         </header>
         
         <div class="stats-row">
-            <div class="stat-card">
-                <h3>Players</h3>
-                <div class="value">
-                    <button class="stat-btn" onclick="adjustStat('playersCurrent', -1)">-</button>
-                    <input type="text" id="playersCurrent" onchange="saveData()">
-                    <button class="stat-btn" onclick="adjustStat('playersCurrent', 1)">+</button>
-                </div>
-            </div>
-            <div class="stat-card">
-                <h3>Target</h3>
-                <div class="value">
-                    <button class="stat-btn" onclick="adjustStat('playersTarget', -10)">-</button>
-                    <input type="text" id="playersTarget" onchange="saveData()">
-                    <button class="stat-btn" onclick="adjustStat('playersTarget', 10)">+</button>
-                </div>
-            </div>
-            <div class="stat-card">
-                <h3>Merchants</h3>
-                <div class="value">
-                    <button class="stat-btn" onclick="adjustStat('merchantsCurrent', -1)">-</button>
-                    <input type="text" id="merchantsCurrent" onchange="saveData()">
-                    <button class="stat-btn" onclick="adjustStat('merchantsCurrent', 1)">+</button>
-                </div>
-            </div>
-            <div class="stat-card">
-                <h3>Day</h3>
-                <div class="value">
-                    <button class="stat-btn" onclick="adjustStat('appDay', -1)">-</button>
-                    <input type="text" id="appDay" onchange="saveData()">
-                    <button class="stat-btn" onclick="adjustStat('appDay', 1)">+</button>
-                </div>
-            </div>
+            <div class="stat-card"><h3>Players</h3><div class="value"><button class="stat-btn" onclick="adjustStat('playersCurrent', -1)">-</button><input type="text" id="playersCurrent"><button class="stat-btn" onclick="adjustStat('playersCurrent', 1)">+</button></div></div>
+            <div class="stat-card"><h3>Target</h3><div class="value"><button class="stat-btn" onclick="adjustStat('playersTarget', -10)">-</button><input type="text" id="playersTarget"><button class="stat-btn" onclick="adjustStat('playersTarget', 10)">+</button></div></div>
+            <div class="stat-card"><h3>Merchants</h3><div class="value"><button class="stat-btn" onclick="adjustStat('merchantsCurrent', -1)">-</button><input type="text" id="merchantsCurrent"><button class="stat-btn" onclick="adjustStat('merchantsCurrent', 1)">+</button></div></div>
+            <div class="stat-card"><h3>Day</h3><div class="value"><button class="stat-btn" onclick="adjustStat('appDay', -1)">-</button><input type="text" id="appDay"><button class="stat-btn" onclick="adjustStat('appDay', 1)">+</button></div></div>
         </div>
         
         <div class="progress-section">
-            <div class="progress-header">
-                <div class="progress-title">📱 App Status</div>
-                <div class="progress-stats">
-                    <span id="appStatus">In Review</span>
-                    <span id="progressPercent">60%</span>
-                </div>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="appProgress" style="width: 60%"></div>
-            </div>
+            <div class="progress-header"><div class="progress-title">📱 App Status</div><div class="progress-stats"><span id="appStatus">In Review</span><span id="progressPercent">60%</span></div></div>
+            <div class="progress-bar"><div class="progress-fill" id="appProgress" style="width: 60%"></div></div>
             <div class="checklist-row" id="checklistRow"></div>
         </div>
         
         <div class="kanban-section">
-            <div class="kanban-header">
-                <div class="kanban-title">🏪 Merchant Acquisition</div>
-            </div>
+            <div class="kanban-header"><div class="kanban-title">🏪 Merchant Acquisition</div></div>
             <div class="kanban-grid">
-                <div class="kanban-col" id="kanban-todo">
-                    <h4>TODO <button class="kanban-add" onclick="addTask('todo')">+</button></h4>
-                </div>
-                <div class="kanban-col" id="kanban-progress">
-                    <h4>IN PROGRESS <button class="kanban-add" onclick="addTask('progress')">+</button></h4>
-                </div>
-                <div class="kanban-col" id="kanban-done">
-                    <h4>DONE <button class="kanban-add" onclick="addTask('done')">+</button></h4>
-                </div>
+                <div class="kanban-col" id="kanban-todo"><h4>TODO <button class="kanban-add" onclick="addTask('todo')">+</button></h4></div>
+                <div class="kanban-col" id="kanban-progress"><h4>IN PROGRESS <button class="kanban-add" onclick="addTask('progress')">+</button></h4></div>
+                <div class="kanban-col" id="kanban-done"><h4>DONE <button class="kanban-add" onclick="addTask('done')">+</button></h4></div>
             </div>
         </div>
         
         <div class="content-section">
-            <div class="content-card">
-                <h3>TODAY'S CONTENT</h3>
-                <input type="text" id="contentToday" onchange="saveData()">
-            </div>
-            <div class="content-card">
-                <h3>TOMORROW'S CONTENT</h3>
-                <input type="text" id="contentTomorrow" onchange="saveData()">
-            </div>
+            <div class="content-card"><h3>TODAY'S CONTENT</h3><input type="text" id="contentToday"></div>
+            <div class="content-card"><h3>TOMORROW'S CONTENT</h3><input type="text" id="contentTomorrow"></div>
         </div>
         
-        <div class="task-section">
-            <h3>🎯 TODAY'S LAUNCH TASK</h3>
-            <input type="text" id="todaysTask" onchange="saveData()">
-        </div>
+        <div class="task-section"><h3>🎯 TODAY'S LAUNCH TASK</h3><input type="text" id="todaysTask"></div>
         
         <div class="competitor-grid">
-            <div class="competitor-item">
-                <strong>Pokemon GO</strong>
-                <input type="text" id="competitor0" placeholder="Check for new features" onchange="saveData()">
-            </div>
-            <div class="competitor-item">
-                <strong>Starbucks</strong>
-                <input type="text" id="competitor1" placeholder="Loyalty innovations" onchange="saveData()">
-            </div>
-            <div class="competitor-item">
-                <strong>Stepn</strong>
-                <input type="text" id="competitor2" placeholder="Web3 gaming sentiment" onchange="saveData()">
-            </div>
-            <div class="competitor-item">
-                <strong>Local SEA</strong>
-                <input type="text" id="competitor3" placeholder="Regional competitors" onchange="saveData()">
-            </div>
+            <div class="competitor-item"><strong>Pokemon GO</strong><input type="text" id="competitor0" placeholder="Check for new features"></div>
+            <div class="competitor-item"><strong>Starbucks</strong><input type="text" id="competitor1" placeholder="Loyalty innovations"></div>
+            <div class="competitor-item"><strong>Stepn</strong><input type="text" id="competitor2" placeholder="Web3 gaming sentiment"></div>
+            <div class="competitor-item"><strong>Local SEA</strong><input type="text" id="competitor3" placeholder="Regional competitors"></div>
         </div>
     </div>
     
-    <script>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+        
         const SUPABASE_URL = 'https://fkhyriqnxpnckwoxafrv.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZraHlyaXFueHBuY2t3b3hhZnJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5ODYxOTMsImV4cCI6MjA4NTU2MjE5M30._c5ZLJoJpvdzumz4HT8PbqvAUO0nO3DJOtq8EMFtd6E';
-        const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZraHlyaXFueHBuY2t3b3hhZnJ2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTk4NjE5MywiZXhwIjoyMDg1NTYyMTkzfQ.fIfoFisSi4KkxJgoNsa_fL5e7uYKyRqSiDifIwjGmp4';
         
-        const { createClient } = supabase;
-        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         let data = {
-            streak: 0,
-            appStatus: 'In Review',
-            appDay: 3,
-            playersCurrent: 0,
-            playersTarget: 100,
-            merchantsCurrent: 2,
-            checklist: [
-                { label: 'App Submitted', checked: true },
-                { label: 'IAP Configured', checked: true },
-                { label: 'ASO Keywords', checked: false },
-                { label: 'Press Kit', checked: false },
-                { label: 'Launch Content', checked: false }
-            ],
+            streak: 0, appStatus: 'In Review', appDay: 3, playersCurrent: 0, playersTarget: 100, merchantsCurrent: 2,
+            checklist: [{label:'App Submitted',checked:true},{label:'IAP Configured',checked:true},{label:'ASO Keywords',checked:false},{label:'Press Kit',checked:false},{label:'Launch Content',checked:false}],
             merchants: { todo: ['Gaming Cafe A', 'Gaming Cafe B'], progress: [], done: [] },
-            contentToday: 'Behind-the-scenes dev screenshot',
-            contentTomorrow: 'Gacha pull teaser video',
-            todaysTask: 'Draft 5 tweets showcasing gacha animation',
-            competitors: ['', '', '', '']
+            contentToday: 'Behind-the-scenes dev screenshot', contentTomorrow: 'Gacha pull teaser video',
+            todaysTask: 'Draft 5 tweets showcasing gacha animation', competitors: ['','','','']
         };
         
         async function init() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
+            const { data: { session } } = await supabase.auth.getSession();
             if (session) {
                 document.getElementById('auth-screen').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
@@ -480,7 +169,7 @@
                 renderAll();
             }
             
-            supabaseClient.auth.onAuthStateChange(async (event, session) => {
+            supabase.auth.onAuthStateChange(async (event, session) => {
                 if (event === 'SIGNED_IN' && session) {
                     document.getElementById('auth-screen').style.display = 'none';
                     document.getElementById('dashboard').style.display = 'block';
@@ -494,55 +183,47 @@
         }
         
         async function signIn() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            const { error } = await supabase.auth.signInWithPassword({
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            });
             if (error) {
                 document.getElementById('auth-error').textContent = error.message;
                 document.getElementById('auth-error').style.display = 'block';
             }
         }
         
-        async function signOut() {
-            await supabaseClient.auth.signOut();
-        }
+        async function signOut() { await supabase.auth.signOut(); }
         
         async function loadData() {
-            // Try Supabase first (with service key for admin access)
-            try {
-                const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-                const { data: row } = await adminClient.from('regaia_dashboard').select('*').eq('id', 'main').maybeSingle();
-                if (row && row.data) {
-                    data = { ...data, ...row.data };
-                    console.log('Loaded from Supabase');
-                }
-            } catch (e) {
-                console.log('Supabase load failed, using local');
-            }
-            // Sync with localStorage
+            // Try localStorage first (more reliable for immediate load)
             const local = localStorage.getItem('regaia_dashboard');
             if (local) {
-                const parsed = JSON.parse(local);
-                data = { ...data, ...parsed };
+                try {
+                    const parsed = JSON.parse(local);
+                    data = { ...data, ...parsed };
+                } catch (e) {}
             }
+            
+            // Then sync from Supabase (background)
+            try {
+                const { data: row } = await supabase.from('regaia_dashboard').select('*').eq('id', 'main').maybeSingle();
+                if (row && row.data) {
+                    data = { ...data, ...row.data };
+                    localStorage.setItem('regaia_dashboard', JSON.stringify(data));
+                }
+            } catch (e) {}
         }
         
         async function saveData() {
-            // Save to localStorage
             localStorage.setItem('regaia_dashboard', JSON.stringify(data));
-            
-            // Save to Supabase (with service key)
             try {
-                const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-                await adminClient.from('regaia_dashboard').upsert({
+                await supabase.from('regaia_dashboard').upsert({
                     id: 'main',
                     data: data,
                     updated_at: new Date().toISOString()
                 }, { upsert: true });
-                console.log('Saved to Supabase');
-            } catch (e) {
-                console.log('Supabase save failed:', e.message);
-            }
+            } catch (e) {}
         }
         
         function renderAll() {
@@ -557,12 +238,9 @@
             document.getElementById('appProgress').style.width = percent + '%';
             document.getElementById('progressPercent').textContent = percent + '%';
             
-            document.getElementById('checklistRow').innerHTML = data.checklist.map((item, idx) => `
-                <div class="check-item ${item.checked ? 'checked' : ''}" onclick="toggleCheck(${idx})">
-                    <div class="check"></div>
-                    <span>${item.label}</span>
-                </div>
-            `).join('');
+            document.getElementById('checklistRow').innerHTML = data.checklist.map((item, idx) => 
+                `<div class="check-item ${item.checked ? 'checked' : ''}" onclick="toggleCheck(${idx})"><div class="check"></div><span>${item.label}</span></div>`
+            ).join('');
             
             document.getElementById('contentToday').value = data.contentToday;
             document.getElementById('contentTomorrow').value = data.contentTomorrow;
@@ -578,35 +256,27 @@
         function renderKanban() {
             ['todo', 'progress', 'done'].forEach(col => {
                 const items = data.merchants[col] || [];
-                document.getElementById('kanban-' + col).innerHTML = `
-                    <h4>${col.toUpperCase()} <button class="kanban-add" onclick="addTask('${col}')">+</button></h4>
-                    ${items.map((text, idx) => `
-                        <div class="kanban-item" data-col="${col}" data-idx="${idx}">
-                            <span>${text}</span>
-                            <button class="delete" onclick="deleteTask('${col}', ${idx})">×</button>
-                        </div>
-                    `).join('')}
-                `;
+                document.getElementById('kanban-' + col).innerHTML = 
+                    `<h4>${col.toUpperCase()} <button class="kanban-add" onclick="addTask('${col}')">+</button></h4>` +
+                    items.map((text, idx) => 
+                        `<div class="kanban-item" data-col="${col}" data-idx="${idx}"><span>${text}</span><button class="delete" onclick="deleteTask('${col}', ${idx})">×</button></div>`
+                    ).join('');
             });
             
             ['todo', 'progress', 'done'].forEach(col => {
                 new Sortable(document.getElementById('kanban-' + col), {
-                    group: 'merchants',
-                    animation: 150,
-                    onEnd: function(evt) {
-                        const fromCol = evt.from.getAttribute('id').replace('kanban-', '');
-                        const toCol = evt.to.getAttribute('id').replace('kanban-', '');
-                        const fromIdx = evt.oldIndex - 1;
-                        const toIdx = evt.newIndex - 1;
-                        moveTask(fromCol, toCol, fromIdx, toIdx);
+                    group: 'merchants', animation: 150,
+                    onEnd: (evt) => {
+                        const fromCol = evt.from.id.replace('kanban-', '');
+                        const toCol = evt.to.id.replace('kanban-', '');
+                        moveTask(fromCol, toCol, evt.oldIndex - 1, evt.newIndex - 1);
                     }
                 });
             });
         }
         
         function adjustStat(stat, delta) {
-            data[stat] = (data[stat] || 0) + delta;
-            if (data[stat] < 0) data[stat] = 0;
+            data[stat] = Math.max(0, (data[stat] || 0) + delta);
             document.getElementById(stat).value = data[stat];
             saveData();
         }
@@ -636,9 +306,12 @@
         }
         
         function moveTask(fromCol, toCol, fromIdx, toIdx) {
+            if (fromCol === toCol && fromIdx === toIdx) return;
             const item = data.merchants[fromCol][fromIdx];
             data.merchants[fromCol].splice(fromIdx, 1);
+            if (!data.merchants[toCol]) data.merchants[toCol] = [];
             data.merchants[toCol].splice(toIdx, 0, item);
+            renderAll();
             saveData();
         }
         
