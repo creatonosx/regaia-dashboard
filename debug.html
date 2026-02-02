@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head><title>Debug Supabase</title></head>
+<body style="background:#1a1a1a;color:#fff;font-family:monospace;padding:20px;">
+<h2>🔍 Supabase Debug Test</h2>
+<pre id="output">Testing...</pre>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const output = document.getElementById('output');
+const log = (msg) => output.textContent += msg + '\n';
+
+const SUPABASE_URL = 'https://fkhyriqnxpnckwoxafrv.supabase.co';
+const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZraHlyaXFueHBuY2t3b3hhZnJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5ODYxOTMsImV4cCI6MjA4NTU2MjE5M30._c5ZLJoJpvdzumz4HT8PbqvAUO0nO3DJOtq8EMFtd6E';
+const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZraHlyaXFueHBuY2t3b3hhZnJ2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTk4NjE5MywiZXhwIjoyMDg1NTYyMTkzfQ.fIfoFisSi4KkxJgoNsa_fL5e7uYKyRqSiDifIwjGmp4';
+
+log('1. Creating client...');
+const client = createClient(SUPABASE_URL, ANON_KEY);
+
+log('2. Testing read...');
+try {
+  const { data, error } = await client.from('regaia_dashboard').select('*').eq('id', 'main').maybeSingle();
+  if (error) {
+    log('❌ Read error: ' + error.message);
+  } else if (data) {
+    log('✅ Read success! Data:');
+    log(JSON.stringify(data, null, 2));
+  } else {
+    log('⚠️ No data found');
+  }
+} catch (e) {
+  log('❌ Exception: ' + e.message);
+}
+
+log('\n3. Testing write...');
+const testData = { 
+  id: 'main', 
+  data: { test: 'hello ' + Date.now() },
+  updated_at: new Date().toISOString()
+};
+
+try {
+  const { data, error } = await client.from('regaia_dashboard').upsert(testData, { upsert: true });
+  if (error) {
+    log('❌ Write error: ' + error.message);
+  } else {
+    log('✅ Write success!');
+    log(JSON.stringify(data, null, 2));
+  }
+} catch (e) {
+  log('❌ Write exception: ' + e.message);
+}
+
+log('\nDone!');
+</script>
+</body>
+</html>
