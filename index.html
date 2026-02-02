@@ -17,7 +17,6 @@
         }
         .container { max-width: 1200px; margin: 0 auto; }
         
-        /* Auth Screen */
         #auth-screen {
             display: flex;
             flex-direction: column;
@@ -57,7 +56,6 @@
         }
         .auth-error { color: #ef4444; font-size: 0.85rem; display: none; }
         
-        /* Dashboard */
         #dashboard { display: none; }
         
         header {
@@ -87,7 +85,6 @@
             font-size: 0.85rem;
         }
         
-        /* Stats Row */
         .stats-row {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -133,7 +130,6 @@
         }
         .stat-btn:hover { border-color: #666; color: #fff; }
         
-        /* Progress Card */
         .progress-section {
             background: #242424;
             border-radius: 12px;
@@ -190,7 +186,6 @@
         .check-item span { font-size: 0.85rem; }
         .check-item.checked span { text-decoration: line-through; opacity: 0.7; }
         
-        /* Kanban Section */
         .kanban-section {
             background: #242424;
             border-radius: 12px;
@@ -254,7 +249,6 @@
         .kanban-item:hover .delete { opacity: 1; }
         .kanban-item .delete:hover { color: #ef4444; }
         
-        /* Content Section */
         .content-section {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -278,7 +272,6 @@
             font-size: 0.95rem;
         }
         
-        /* Task Section */
         .task-section {
             background: #242424;
             border-radius: 12px;
@@ -296,7 +289,6 @@
             font-size: 1rem;
         }
         
-        /* Competitor Grid */
         .competitor-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -453,6 +445,7 @@
     <script>
         const SUPABASE_URL = 'https://fkhyriqnxpnckwoxafrv.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZraHlyaXFueHBuY2t3b3hhZnJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5ODYxOTMsImV4cCI6MjA4NTU2MjE5M30._c5ZLJoJpvdzumz4HT8PbqvAUO0nO3DJOtq8EMFtd6E';
+        const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZraHlyaXFueHBuY2t3b3hhZnJ2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTk4NjE5MywiZXhwIjoyMDg1NTYyMTkzfQ.fIfoFisSi4KkxJgoNsa_fL5e7uYKyRqSiDifIwjGmp4';
         
         const { createClient } = supabase;
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -515,16 +508,18 @@
         }
         
         async function loadData() {
-            // Try Supabase first
+            // Try Supabase first (with service key for admin access)
             try {
-                const { data: row } = await supabase.from('regaia_dashboard').select('*').eq('id', 'main').maybeSingle();
+                const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+                const { data: row } = await adminClient.from('regaia_dashboard').select('*').eq('id', 'main').maybeSingle();
                 if (row && row.data) {
                     data = { ...data, ...row.data };
+                    console.log('Loaded from Supabase');
                 }
             } catch (e) {
-                console.log('Supabase not available, using local storage');
+                console.log('Supabase load failed, using local');
             }
-            // Always sync with localStorage as backup
+            // Sync with localStorage
             const local = localStorage.getItem('regaia_dashboard');
             if (local) {
                 const parsed = JSON.parse(local);
@@ -533,16 +528,20 @@
         }
         
         async function saveData() {
+            // Save to localStorage
             localStorage.setItem('regaia_dashboard', JSON.stringify(data));
-            // Try Supabase (will fail if table doesn't exist)
+            
+            // Save to Supabase (with service key)
             try {
-                await supabase.from('regaia_dashboard').upsert({
+                const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+                await adminClient.from('regaia_dashboard').upsert({
                     id: 'main',
                     data: data,
                     updated_at: new Date().toISOString()
-                });
+                }, { upsert: true });
+                console.log('Saved to Supabase');
             } catch (e) {
-                // Table doesn't exist yet
+                console.log('Supabase save failed:', e.message);
             }
         }
         
