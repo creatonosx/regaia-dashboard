@@ -10,13 +10,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, sans-serif; background: #1a1a1a; color: #e0e0e0; min-height: 100vh; padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; }
-        
-        #auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; text-align: center; }
-        .auth-box { background: #242424; padding: 40px; border-radius: 12px; border: 1px solid #333; width: 100%; max-width: 360px; }
-        .auth-input { width: 100%; padding: 14px; border: 1px solid #333; border-radius: 8px; background: #2a2a2a; color: #fff; font-size: 1rem; margin-bottom: 12px; }
-        .auth-btn { width: 100%; padding: 14px; background: #333; border: none; border-radius: 8px; color: #fff; font-size: 1rem; cursor: pointer; margin-bottom: 12px; }
-        .auth-error { color: #ef4444; font-size: 0.85rem; display: none; }
-        
         #dashboard { display: none; }
         header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid #333; margin-bottom: 30px; }
         .header-left { display: flex; align-items: center; gap: 16px; }
@@ -24,6 +17,7 @@
         .streak { background: #2a2a2a; padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; }
         .streak span { color: #f59e0b; font-weight: 600; }
         .logout-btn { background: none; border: 1px solid #444; color: #888; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+        .logout-btn:hover { border-color: #666; color: #fff; }
         
         .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 30px; }
         .stat-card { background: #242424; border-radius: 12px; padding: 20px; border: 1px solid #333; text-align: center; }
@@ -50,8 +44,7 @@
         .check-item.checked span { text-decoration: line-through; opacity: 0.7; }
         
         .kanban-section { background: #242424; border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid #333; }
-        .kanban-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .kanban-title { font-size: 1.1rem; font-weight: 600; color: #fff; }
+        .kanban-title { font-size: 1.1rem; font-weight: 600; color: #fff; margin-bottom: 20px; }
         .kanban-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
         .kanban-col { background: #1e1e1e; border-radius: 8px; padding: 16px; min-height: 200px; }
         .kanban-col h4 { color: #888; font-size: 0.85rem; margin-bottom: 12px; display: flex; justify-content: space-between; }
@@ -87,143 +80,81 @@
     </style>
 </head>
 <body>
-    <div id="auth-screen">
-        <h1 style="margin-bottom:16px;">🚀 Regaia Mission Control</h1>
-        <p style="margin-bottom:24px;color:#888;">Sign in to access your dashboard</p>
-        <div class="auth-box">
-            <input type="email" id="email" class="auth-input" placeholder="Email" value="9kingcryptoclub@gmail.com">
-            <input type="password" id="password" class="auth-input" placeholder="Password">
-            <button onclick="signIn()" class="auth-btn">Sign In</button>
-            <p class="auth-error" id="auth-error"></p>
-        </div>
-    </div>
-    
     <div id="dashboard">
         <header>
             <div class="header-left">
                 <h1>🚀 Regaia Mission Control</h1>
                 <div class="streak">🔥 <span id="streak">0</span> day streak</div>
             </div>
-            <button onclick="signOut()" class="logout-btn">Sign Out</button>
+            <button id="logoutBtn" class="logout-btn">Sign Out</button>
         </header>
         
         <div class="stats-row">
-            <div class="stat-card"><h3>Players</h3><div class="value"><button class="stat-btn" onclick="adjustStat('playersCurrent', -1)">-</button><input type="text" id="playersCurrent"><button class="stat-btn" onclick="adjustStat('playersCurrent', 1)">+</button></div></div>
-            <div class="stat-card"><h3>Target</h3><div class="value"><button class="stat-btn" onclick="adjustStat('playersTarget', -10)">-</button><input type="text" id="playersTarget"><button class="stat-btn" onclick="adjustStat('playersTarget', 10)">+</button></div></div>
-            <div class="stat-card"><h3>Merchants</h3><div class="value"><button class="stat-btn" onclick="adjustStat('merchantsCurrent', -1)">-</button><input type="text" id="merchantsCurrent"><button class="stat-btn" onclick="adjustStat('merchantsCurrent', 1)">+</button></div></div>
-            <div class="stat-card"><h3>Day</h3><div class="value"><button class="stat-btn" onclick="adjustStat('appDay', -1)">-</button><input type="text" id="appDay"><button class="stat-btn" onclick="adjustStat('appDay', 1)">+</button></div></div>
+            <div class="stat-card"><h3>Players</h3><div class="value"><button class="stat-btn" data-action="adjust" data-stat="playersCurrent" data-delta="-1">-</button><input type="text" id="playersCurrent" data-action="save"><button class="stat-btn" data-action="adjust" data-stat="playersCurrent" data-delta="1">+</button></div></div>
+            <div class="stat-card"><h3>Target</h3><div class="value"><button class="stat-btn" data-action="adjust" data-stat="playersTarget" data-delta="-10">-</button><input type="text" id="playersTarget" data-action="save"><button class="stat-btn" data-action="adjust" data-stat="playersTarget" data-delta="10">+</button></div></div>
+            <div class="stat-card"><h3>Merchants</h3><div class="value"><button class="stat-btn" data-action="adjust" data-stat="merchantsCurrent" data-delta="-1">-</button><input type="text" id="merchantsCurrent" data-action="save"><button class="stat-btn" data-action="adjust" data-stat="merchantsCurrent" data-delta="1">+</button></div></div>
+            <div class="stat-card"><h3>Day</h3><div class="value"><button class="stat-btn" data-action="adjust" data-stat="appDay" data-delta="-1">-</button><input type="text" id="appDay" data-action="save"><button class="stat-btn" data-action="adjust" data-stat="appDay" data-delta="1">+</button></div></div>
         </div>
         
         <div class="progress-section">
-            <div class="progress-header"><div class="progress-title">📱 App Status</div><div class="progress-stats"><span id="appStatus">In Review</span><span id="progressPercent">60%</span></div></div>
+            <div class="progress-header"><div class="progress-title">📱 App Status</div><div class="progress-stats"><span id="appStatus">In Review</span><span id="progressPercent">60%</span></div>
             <div class="progress-bar"><div class="progress-fill" id="appProgress" style="width: 60%"></div></div>
             <div class="checklist-row" id="checklistRow"></div>
         </div>
         
         <div class="kanban-section">
-            <div class="kanban-header"><div class="kanban-title">🏪 Merchant Acquisition</div></div>
+            <div class="kanban-title">🏪 Merchant Acquisition</div>
             <div class="kanban-grid">
-                <div class="kanban-col" id="kanban-todo"><h4>TODO <button class="kanban-add" onclick="addTask('todo')">+</button></h4></div>
-                <div class="kanban-col" id="kanban-progress"><h4>IN PROGRESS <button class="kanban-add" onclick="addTask('progress')">+</button></h4></div>
-                <div class="kanban-col" id="kanban-done"><h4>DONE <button class="kanban-add" onclick="addTask('done')">+</button></h4></div>
+                <div class="kanban-col" id="kanban-todo"><h4>TODO <button class="kanban-add" data-action="addTask" data-col="todo">+</button></h4></div>
+                <div class="kanban-col" id="kanban-progress"><h4>IN PROGRESS <button class="kanban-add" data-action="addTask" data-col="progress">+</button></h4></div>
+                <div class="kanban-col" id="kanban-done"><h4>DONE <button class="kanban-add" data-action="addTask" data-col="done">+</button></h4></div>
             </div>
         </div>
         
         <div class="content-section">
-            <div class="content-card"><h3>TODAY'S CONTENT</h3><input type="text" id="contentToday"></div>
-            <div class="content-card"><h3>TOMORROW'S CONTENT</h3><input type="text" id="contentTomorrow"></div>
+            <div class="content-card"><h3>TODAY'S CONTENT</h3><input type="text" id="contentToday" data-action="save"></div>
+            <div class="content-card"><h3>TOMORROW'S CONTENT</h3><input type="text" id="contentTomorrow" data-action="save"></div>
         </div>
         
-        <div class="task-section"><h3>🎯 TODAY'S LAUNCH TASK</h3><input type="text" id="todaysTask"></div>
+        <div class="task-section"><h3>🎯 TODAY'S LAUNCH TASK</h3><input type="text" id="todaysTask" data-action="save"></div>
         
         <div class="competitor-grid">
-            <div class="competitor-item"><strong>Pokemon GO</strong><input type="text" id="competitor0" placeholder="Check for new features"></div>
-            <div class="competitor-item"><strong>Starbucks</strong><input type="text" id="competitor1" placeholder="Loyalty innovations"></div>
-            <div class="competitor-item"><strong>Stepn</strong><input type="text" id="competitor2" placeholder="Web3 gaming sentiment"></div>
-            <div class="competitor-item"><strong>Local SEA</strong><input type="text" id="competitor3" placeholder="Regional competitors"></div>
+            <div class="competitor-item"><strong>Pokemon GO</strong><input type="text" id="competitor0" placeholder="Check for new features" data-action="save"></div>
+            <div class="competitor-item"><strong>Starbucks</strong><input type="text" id="competitor1" placeholder="Loyalty innovations" data-action="save"></div>
+            <div class="competitor-item"><strong>Stepn</strong><input type="text" id="competitor2" placeholder="Web3 gaming sentiment" data-action="save"></div>
+            <div class="competitor-item"><strong>Local SEA</strong><input type="text" id="competitor3" placeholder="Regional competitors" data-action="save"></div>
         </div>
     </div>
     
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-        
+    <script>
         const SUPABASE_URL = 'https://fkhyriqnxpnckwoxafrv.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZraHlyaXFueHBuY2t3b3hhZnJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5ODYxOTMsImV4cCI6MjA4NTU2MjE5M30._c5ZLJoJpvdzumz4HT8PbqvAUO0nO3DJOtq8EMFtd6E';
         
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         let data = {
             streak: 0, appStatus: 'In Review', appDay: 3, playersCurrent: 0, playersTarget: 100, merchantsCurrent: 2,
             checklist: [{label:'App Submitted',checked:true},{label:'IAP Configured',checked:true},{label:'ASO Keywords',checked:false},{label:'Press Kit',checked:false},{label:'Launch Content',checked:false}],
             merchants: { todo: ['Gaming Cafe A', 'Gaming Cafe B'], progress: [], done: [] },
             contentToday: 'Behind-the-scenes dev screenshot', contentTomorrow: 'Gacha pull teaser video',
-            todaysTask: 'Draft 5 tweets showcasing gacha animation', competitors: ['','','','']
+            todaysTask: 'Draft 5 tweets showcasing gacha animation', competitors: ['', '', '', '']
         };
         
-        async function init() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                document.getElementById('auth-screen').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'block';
-                await loadData();
-                renderAll();
-            }
-            
-            supabase.auth.onAuthStateChange(async (event, session) => {
-                if (event === 'SIGNED_IN' && session) {
-                    document.getElementById('auth-screen').style.display = 'none';
-                    document.getElementById('dashboard').style.display = 'block';
-                    await loadData();
-                    renderAll();
-                } else if (event === 'SIGNED_OUT') {
-                    document.getElementById('auth-screen').style.display = 'flex';
-                    document.getElementById('dashboard').style.display = 'none';
-                }
-            });
-        }
-        
-        async function signIn() {
-            const { error } = await supabase.auth.signInWithPassword({
-                email: document.getElementById('email').value,
-                password: document.getElementById('password').value
-            });
-            if (error) {
-                document.getElementById('auth-error').textContent = error.message;
-                document.getElementById('auth-error').style.display = 'block';
-            }
-        }
-        
-        async function signOut() { await supabase.auth.signOut(); }
-        
-        async function loadData() {
-            // Try localStorage first (more reliable for immediate load)
+        function loadData() {
             const local = localStorage.getItem('regaia_dashboard');
             if (local) {
                 try {
                     const parsed = JSON.parse(local);
                     data = { ...data, ...parsed };
-                } catch (e) {}
+                } catch(e) {}
             }
-            
-            // Then sync from Supabase (background)
-            try {
-                const { data: row } = await supabase.from('regaia_dashboard').select('*').eq('id', 'main').maybeSingle();
-                if (row && row.data) {
-                    data = { ...data, ...row.data };
-                    localStorage.setItem('regaia_dashboard', JSON.stringify(data));
-                }
-            } catch (e) {}
         }
         
-        async function saveData() {
+        function saveData() {
             localStorage.setItem('regaia_dashboard', JSON.stringify(data));
-            try {
-                await supabase.from('regaia_dashboard').upsert({
-                    id: 'main',
-                    data: data,
-                    updated_at: new Date().toISOString()
-                }, { upsert: true });
-            } catch (e) {}
+            supabase.from('regaia_dashboard').upsert({
+                id: 'main', data: data, updated_at: new Date().toISOString()
+            }, { upsert: true }).catch(() => {});
         }
         
         function renderAll() {
@@ -239,7 +170,7 @@
             document.getElementById('progressPercent').textContent = percent + '%';
             
             document.getElementById('checklistRow').innerHTML = data.checklist.map((item, idx) => 
-                `<div class="check-item ${item.checked ? 'checked' : ''}" onclick="toggleCheck(${idx})"><div class="check"></div><span>${item.label}</span></div>`
+                `<div class="check-item ${item.checked ? 'checked' : ''}" data-action="toggleCheck" data-idx="${idx}"><div class="check"></div><span>${item.label}</span></div>`
             ).join('');
             
             document.getElementById('contentToday').value = data.contentToday;
@@ -257,16 +188,16 @@
             ['todo', 'progress', 'done'].forEach(col => {
                 const items = data.merchants[col] || [];
                 document.getElementById('kanban-' + col).innerHTML = 
-                    `<h4>${col.toUpperCase()} <button class="kanban-add" onclick="addTask('${col}')">+</button></h4>` +
+                    `<h4>${col.toUpperCase()} <button class="kanban-add" data-action="addTask" data-col="${col}">+</button></h4>` +
                     items.map((text, idx) => 
-                        `<div class="kanban-item" data-col="${col}" data-idx="${idx}"><span>${text}</span><button class="delete" onclick="deleteTask('${col}', ${idx})">×</button></div>`
+                        `<div class="kanban-item" data-col="${col}" data-idx="${idx}"><span>${text}</span><button class="delete" data-action="deleteTask" data-col="${col}" data-idx="${idx}">×</button></div>`
                     ).join('');
             });
             
             ['todo', 'progress', 'done'].forEach(col => {
                 new Sortable(document.getElementById('kanban-' + col), {
                     group: 'merchants', animation: 150,
-                    onEnd: (evt) => {
+                    onEnd: function(evt) {
                         const fromCol = evt.from.id.replace('kanban-', '');
                         const toCol = evt.to.id.replace('kanban-', '');
                         moveTask(fromCol, toCol, evt.oldIndex - 1, evt.newIndex - 1);
@@ -315,21 +246,37 @@
             saveData();
         }
         
-        ['contentToday', 'contentTomorrow', 'todaysTask'].forEach(id => {
-            document.getElementById(id).addEventListener('change', function() {
-                data[id] = this.value;
+        document.addEventListener('click', function(e) {
+            const action = e.target.dataset.action;
+            if (!action) return;
+            
+            if (action === 'adjust') {
+                adjustStat(e.target.dataset.stat, parseInt(e.target.dataset.delta));
+            } else if (action === 'toggleCheck') {
+                toggleCheck(parseInt(e.target.closest('[data-action]').dataset.idx || e.target.closest('[data-idx]')?.dataset.idx));
+            } else if (action === 'addTask') {
+                addTask(e.target.closest('[data-col]').dataset.col);
+            } else if (action === 'deleteTask') {
+                const el = e.target.closest('[data-col]') || e.target.closest('[data-idx]');
+                if (el) deleteTask(el.dataset.col, parseInt(el.dataset.idx));
+            } else if (action === 'save') {
+                const id = e.target.id;
+                data[id] = e.target.value;
+                saveData();
+            }
+        });
+        
+        document.querySelectorAll('input[data-action="save"]').forEach(input => {
+            input.addEventListener('change', function() {
+                data[this.id] = this.value;
                 saveData();
             });
         });
         
-        for (let i = 0; i < 4; i++) {
-            document.getElementById('competitor' + i).addEventListener('change', function() {
-                data.competitors[i] = this.value;
-                saveData();
-            });
-        }
+        document.getElementById('logoutBtn').addEventListener('click', () => supabase.auth.signOut().then(() => location.reload()));
         
-        init();
+        loadData();
+        renderAll();
     </script>
 </body>
 </html>
