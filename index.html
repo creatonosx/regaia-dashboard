@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regaia Mission Control</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #333;
+            margin-bottom: 30px;
+        }
+        h1 { font-size: 1.5rem; font-weight: 600; color: #fff; }
+        .streak { 
+            background: #2a2a2a; 
+            padding: 8px 16px; 
+            border-radius: 20px; 
+            font-size: 0.9rem;
+        }
+        .streak span { color: #f59e0b; font-weight: 600; }
+        
+        /* Cards */
+        .card {
+            background: #242424;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .edit-btn {
+            background: none;
+            border: 1px solid #444;
+            color: #888;
+            padding: 4px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+        .edit-btn:hover { border-color: #666; color: #fff; }
+        .edit-btn.active { background: #333; color: #fff; }
+        
+        /* Progress Bar */
+        .progress-bar {
+            height: 8px;
+            background: #333;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #10b981;
+            transition: width 0.3s ease;
+        }
+        .progress-text {
+            font-size: 0.85rem;
+            color: #888;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        /* Checklists */
+        .checklist { display: flex; flex-direction: column; gap: 10px; }
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid #2a2a2a;
+        }
+        .checklist-item:last-child { border-bottom: none; }
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #444;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .checkbox.checked { background: #10b981; border-color: #10b981; }
+        .checkbox.checked::after { content: '✓'; color: #fff; font-size: 12px; }
+        .checklist-label { flex: 1; cursor: pointer; }
+        .checklist-label.completed { color: #666; text-decoration: line-through; }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        .stat-item {
+            background: #2a2a2a;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 4px;
+        }
+        
+        /* Task Section */
+        .task-input {
+            width: 100%;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px;
+            color: #fff;
+            font-size: 1rem;
+            margin-bottom: 12px;
+        }
+        .task-input:focus { outline: none; border-color: #555; }
+        .task-list { display: flex; flex-direction: column; gap: 8px; }
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #2a2a2a;
+            border-radius: 6px;
+        }
+        .task-text { flex: 1; }
+        .task-delete {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+        .task-delete:hover { color: #ef4444; }
+        
+        /* Financial Goals */
+        .financial-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        .financial-item {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .financial-item h4 { color: #888; font-size: 0.85rem; margin-bottom: 8px; }
+        .financial-item .value { font-size: 1.5rem; font-weight: 700; color: #fff; }
+        .financial-item .change { font-size: 0.85rem; margin-top: 4px; }
+        .financial-item .change.up { color: #10b981; }
+        .financial-item .change.down { color: #ef4444; }
+        
+        /* Content Calendar */
+        .content-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .content-box {
+            flex: 1;
+            background: #2a2a2a;
+            padding: 16px;
+            border-radius: 8px;
+        }
+        .content-box h5 { color: #888; font-size: 0.8rem; margin-bottom: 8px; }
+        .content-box p { color: #fff; font-size: 0.95rem; }
+        
+        /* Competitor Watch */
+        .competitor-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .competitor-item {
+            background: #2a2a2a;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        .competitor-item strong { color: #fff; }
+        
+        /* Auth Overlay */
+        #auth-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        #auth-overlay.hidden { display: none; }
+        .auth-box {
+            background: #242424;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #333;
+            max-width: 360px;
+            width: 90%;
+        }
+        .auth-box h2 { margin-bottom: 20px; color: #fff; }
+        .auth-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: #2a2a2a;
+            color: #fff;
+            font-size: 1rem;
+            margin-bottom: 16px;
+        }
+        .auth-input:focus { outline: none; border-color: #555; }
+        .auth-btn {
+            width: 100%;
+            padding: 12px;
+            background: #333;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .auth-btn:hover { background: #444; }
+        .auth-error { color: #ef4444; font-size: 0.85rem; margin-top: 12px; display: none; }
+        
+        /* Inline Edit Mode */
+        .editable { cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: background 0.2s; }
+        .editable:hover { background: #333; }
+        .editable.active { background: #333; }
+        .editable input { 
+            background: #1a1a1a; 
+            border: 1px solid #555; 
+            border-radius: 4px; 
+            padding: 4px 8px; 
+            color: #fff; 
+            font-size: inherit;
+            font-family: inherit;
+            width: 100%;
+        }
+        
+        @media (max-width: 600px) {
+            .stats-grid, .financial-grid, .competitor-grid { grid-template-columns: 1fr; }
+            .content-row { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Auth Overlay -->
+    <div id="auth-overlay">
+        <div class="auth-box">
+            <h2>🔐 Enter Password</h2>
+            <input type="password" id="auth-password" class="auth-input" placeholder="Enter dashboard password">
+            <button onclick="checkAuth()" class="auth-btn">Access Dashboard</button>
+            <p class="auth-error" id="auth-error">Incorrect password</p>
+        </div>
+    </div>
+    
+    <!-- Dashboard -->
+    <div class="container" id="dashboard" style="display: none;">
+        <header>
+            <h1>🚀 Regaia Mission Control</h1>
+            <div class="streak">🔥 <span id="streak-display">0</span> day streak</div>
+        </header>
+        
+        <!-- App Status -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">📱 App Status</div>
+                <button class="edit-btn" onclick="toggleEdit(this)">Edit</button>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="app-progress" style="width: 0%"></div>
+            </div>
+            <div class="progress-text">
+                <span id="app-status">In Review</span>
+                <span id="app-day">Day 3</span>
+            </div>
+            <div class="checklist" id="app-checklist">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+        
+        <!-- Financial Goals -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">💰 Financial Goals</div>
+                <button class="edit-btn" onclick="toggleEdit(this)">Edit</button>
+            </div>
+            <div class="financial-grid">
+                <div class="financial-item">
+                    <h4>Bitcoin</h4>
+                    <div class="value" id="btc-price">$77,555</div>
+                    <div class="change down" id="btc-change">-1.78%</div>
+                </div>
+                <div class="financial-item">
+                    <h4>Gold</h4>
+                    <div class="value" id="gold-price">$4,800</div>
+                    <div class="change" id="gold-change">--</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Stats Overview -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">📊 Quick Stats</div>
+                <button class="edit-btn" onclick="toggleEdit(this)">Edit</button>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value editable" id="players-current">0</div>
+                    <div class="stat-label">Players (Current)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value editable" id="players-target">100</div>
+                    <div class="stat-label">Players (Target)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value editable" id="merchants-current">2</div>
+                    <div class="stat-label">Merchants</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Merchant Acquisition -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">🏪 Merchant Acquisition</div>
+                <button class="edit-btn" onclick="toggleEdit(this)">Edit</button>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="merchant-progress" style="width: 20%"></div>
+            </div>
+            <div class="progress-text">
+                <span><span id="merchants-display">2</span>/10 Merchants</span>
+            </div>
+            <div class="task-list" id="merchant-list">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+        
+        <!-- Content Calendar -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">📅 Content Calendar</div>
+                <button class="edit-btn" onclick="toggleEdit(this)">Edit</button>
+            </div>
+            <div class="content-row">
+                <div class="content-box">
+                    <h5>TODAY</h5>
+                    <p class="editable" id="content-today">Behind-the-scenes dev screenshot</p>
+                </div>
+                <div class="content-box">
+                    <h5>TOMORROW</h5>
+                    <p class="editable" id="content-tomorrow">Gacha pull teaser video</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Today's Task -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">🎯 Today's Launch Task</div>
+            </div>
+            <input type="text" class="task-input editable" id="todays-task" value="Draft 5 tweets showcasing gacha animation">
+        </div>
+        
+        <!-- Competitor Watch -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">👀 Competitor Watch</div>
+                <button class="edit-btn" onclick="toggleEdit(this)">Edit</button>
+            </div>
+            <div class="competitor-grid">
+                <div class="competitor-item">
+                    <strong>Pokemon GO</strong> - Check for new features
+                </div>
+                <div class="competitor-item">
+                    <strong>Starbucks</strong> - Loyalty innovations
+                </div>
+                <div class="competitor-item">
+                    <strong>Stepn</strong> - Web3 gaming sentiment
+                </div>
+                <div class="competitor-item">
+                    <strong>Local SEA</strong> - Regional competitors
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Dashboard Configuration
+        const CONFIG = {
+            passwordHash: null, // Set dynamically from env
+            dataKey: 'regaia_dashboard_data'
+        };
+        
+        // Default Data
+        const defaultData = {
+            streak: 2,
+            appStatus: 'In Review',
+            appDay: 3,
+            appChecklist: [
+                { label: 'App Submitted', checked: true },
+                { label: 'IAP Configured', checked: true },
+                { label: 'ASO Keywords Finalized', checked: false },
+                { label: 'Press Kit Ready', checked: false },
+                { label: 'Launch Day Content Queued', checked: false }
+            ],
+            playersCurrent: 0,
+            playersTarget: 100,
+            merchantsCurrent: 2,
+            merchantsTarget: 10,
+            merchantsList: [
+                { text: 'Gaming Cafe A', done: false },
+                { text: 'Gaming Cafe B', done: false }
+            ],
+            contentToday: 'Behind-the-scenes dev screenshot',
+            contentTomorrow: 'Gacha pull teaser video',
+            todaysTask: 'Draft 5 tweets showcasing gacha animation',
+            btcPrice: '$77,555',
+            btcChange: '-1.78%',
+            goldPrice: '$4,800',
+            goldChange: '--'
+        };
+        
+        let data = { ...defaultData };
+        let isEditMode = false;
+        
+        // Initialize
+        function init() {
+            loadData();
+            renderAll();
+            setupInlineEditing();
+        }
+        
+        // Load/Save Data
+        function loadData() {
+            const saved = localStorage.getItem(CONFIG.dataKey);
+            if (saved) {
+                data = { ...defaultData, ...JSON.parse(saved) };
+            }
+        }
+        
+        function saveData() {
+            localStorage.setItem(CONFIG.dataKey, JSON.stringify(data));
+        }
+        
+        // Render All Sections
+        function renderAll() {
+            renderStreak();
+            renderAppStatus();
+            renderAppChecklist();
+            renderMerchants();
+            renderContent();
+            renderStats();
+            renderFinancial();
+        }
+        
+        function renderStreak() {
+            document.getElementById('streak-display').textContent = data.streak;
+        }
+        
+        function renderAppStatus() {
+            document.getElementById('app-status').textContent = data.appStatus;
+            document.getElementById('app-day').textContent = `Day ${data.appDay}`;
+            const checkedCount = data.appChecklist.filter(i => i.checked).length;
+            const progress = (checkedCount / data.appChecklist.length) * 100;
+            document.getElementById('app-progress').style.width = `${progress}%`;
+        }
+        
+        function renderAppChecklist() {
+            const container = document.getElementById('app-checklist');
+            container.innerHTML = data.appChecklist.map((item, idx) => `
+                <div class="checklist-item">
+                    <div class="checkbox ${item.checked ? 'checked' : ''}" onclick="toggleCheck('app', ${idx})"></div>
+                    <span class="checklist-label ${item.checked ? 'completed' : ''}">${item.label}</span>
+                </div>
+            `).join('');
+        }
+        
+        function renderMerchants() {
+            document.getElementById('merchants-display').textContent = data.merchantsCurrent;
+            const progress = (data.merchantsCurrent / data.merchantsTarget) * 100;
+            document.getElementById('merchant-progress').style.width = `${progress}%`;
+            
+            const container = document.getElementById('merchant-list');
+            container.innerHTML = data.merchantsList.map((item, idx) => `
+                <div class="task-item">
+                    <div class="checkbox ${item.done ? 'checked' : ''}" onclick="toggleCheck('merchant', ${idx})"></div>
+                    <span class="task-text ${item.done ? 'completed' : ''}">${item.text}</span>
+                </div>
+            `).join('');
+        }
+        
+        function renderContent() {
+            document.getElementById('content-today').textContent = data.contentToday;
+            document.getElementById('content-tomorrow').textContent = data.contentTomorrow;
+        }
+        
+        function renderStats() {
+            document.getElementById('players-current').textContent = data.playersCurrent;
+            document.getElementById('players-target').textContent = data.playersTarget;
+            document.getElementById('merchants-current').textContent = data.merchantsCurrent;
+        }
+        
+        function renderFinancial() {
+            document.getElementById('btc-price').textContent = data.btcPrice;
+            document.getElementById('btc-change').textContent = data.btcChange;
+            document.getElementById('gold-price').textContent = data.goldPrice;
+            document.getElementById('gold-change').textContent = data.goldChange;
+        }
+        
+        // Toggle Checkbox
+        function toggleCheck(type, idx) {
+            if (type === 'app') {
+                data.appChecklist[idx].checked = !data.appChecklist[idx].checked;
+            } else if (type === 'merchant') {
+                data.merchantsList[idx].done = !data.merchantsList[idx].done;
+            }
+            saveData();
+            renderAll();
+        }
+        
+        // Toggle Edit Mode
+        function toggleEdit(btn) {
+            isEditMode = !isEditMode;
+            btn.textContent = isEditMode ? 'Done' : 'Edit';
+            btn.classList.toggle('active', isEditMode);
+        }
+        
+        // Setup Inline Editing
+        function setupInlineEditing() {
+            document.getElementById('todays-task').addEventListener('change', (e) => {
+                data.todaysTask = e.target.value;
+                saveData();
+            });
+        }
+        
+        // Auth Functions
+        async function checkAuth() {
+            const password = document.getElementById('auth-password').value;
+            const errorEl = document.getElementById('auth-error');
+            
+            if (!CONFIG.passwordHash) {
+                // First time - set password
+                const encoder = new TextEncoder();
+                const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(password));
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                CONFIG.passwordHash = hashHex;
+                localStorage.setItem('regaia_auth_hash', hashHex);
+                showDashboard();
+            } else {
+                // Verify password
+                const encoder = new TextEncoder();
+                const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(password));
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                
+                if (hashHex === CONFIG.passwordHash) {
+                    showDashboard();
+                } else {
+                    errorEl.style.display = 'block';
+                }
+            }
+        }
+        
+        function showDashboard() {
+            document.getElementById('auth-overlay').classList.add('hidden');
+            document.getElementById('dashboard').style.display = 'block';
+        }
+        
+        // Load saved hash on init
+        window.onload = async () => {
+            const savedHash = localStorage.getItem('regaia_auth_hash');
+            if (savedHash) {
+                CONFIG.passwordHash = savedHash;
+            }
+            init();
+        };
+    </script>
+</body>
+</html>
