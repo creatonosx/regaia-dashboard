@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Regaia Mission Control</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, sans-serif; background: #1a1a1a; color: #e0e0e0; min-height: 100vh; padding: 12px; }
@@ -17,14 +15,14 @@
         h1 { font-size: 1.2rem; font-weight: 600; color: #fff; }
         .streak { background: #2a2a2a; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; }
         .streak span { color: #f59e0b; font-weight: 600; }
-        .logout-btn { background: none; border: 1px solid #444; color: #888; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; }
+        .logout-btn { background: none; border: 1px solid #444; color: #888; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
         
         .stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
         .stat-card { background: #242424; border-radius: 10px; padding: 14px; border: 1px solid #333; text-align: center; }
         .stat-card h3 { color: #888; font-size: 0.75rem; margin-bottom: 6px; }
         .stat-card .value { font-size: 1.4rem; font-weight: 700; color: #fff; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .stat-card .value input { background: transparent; border: none; color: #fff; font-size: 1.4rem; font-weight: 700; width: 50px; text-align: center; }
-        .stat-btn { background: none; border: 1px solid #444; color: #888; width: 24px; height: 24px; border-radius: 4px; font-size: 0.9rem; }
+        .stat-btn { background: none; border: 1px solid #444; color: #888; width: 24px; height: 24px; border-radius: 4px; font-size: 0.9rem; cursor: pointer; }
         
         .progress-section { background: #242424; border-radius: 10px; padding: 14px; margin-bottom: 16px; border: 1px solid #333; }
         .progress-title { font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 10px; }
@@ -32,11 +30,11 @@
         .progress-bar { height: 8px; background: #333; border-radius: 4px; margin-bottom: 10px; }
         .progress-fill { height: 100%; background: #10b981; border-radius: 4px; }
         .checklist-row { display: flex; flex-wrap: wrap; gap: 8px; }
-        .check-item { background: #2a2a2a; padding: 8px 10px; border-radius: 6px; display: flex; align-items: center; gap: 6px; font-size: 0.75rem; flex: 1 1 auto; min-width: 80px; }
+        .check-item { background: #2a2a2a; padding: 8px 10px; border-radius: 6px; display: flex; align-items: center; gap: 6px; font-size: 0.75rem; flex: 1 1 auto; min-width: 80px; cursor: pointer; }
         .check-item.checked { background: #10b981; }
-        .check-item .check { width: 14px; height: 14px; border: 1px solid #444; border-radius: 3px; }
+        .check-item .check { width: 14px; height: 14px; border: 1px solid #444; border-radius: 3px; flex-shrink: 0; }
         .check-item.checked .check { border-color: #fff; background: #fff; }
-        .check-item.checked .check::after { content: '✓'; color: #10b981; font-size: 9px; }
+        .check-item.checked .check::after { content: '✓'; color: #10b981; font-size: 9px; display: flex; align-items: center; justify-content: center; height: 100%; }
         
         .kanban-section { background: #242424; border-radius: 10px; padding: 14px; margin-bottom: 16px; border: 1px solid #333; }
         .kanban-title { font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 12px; }
@@ -44,9 +42,10 @@
         .kanban-col { background: #1e1e1e; border-radius: 8px; padding: 12px; }
         .kanban-col h4 { color: #888; font-size: 0.75rem; margin-bottom: 8px; display: flex; justify-content: space-between; }
         .kanban-add { background: none; border: none; color: #666; font-size: 1rem; cursor: pointer; }
-        .kanban-item { background: #2a2a2a; padding: 10px; border-radius: 6px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
+        .kanban-item { background: #2a2a2a; padding: 10px; border-radius: 6px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; cursor: grab; }
         .kanban-item span { flex: 1; }
-        .kanban-item .delete { background: none; border: none; color: #666; font-size: 1rem; cursor: pointer; }
+        .kanban-item .delete { background: none; border: none; color: #666; font-size: 1rem; cursor: pointer; opacity: 0; }
+        .kanban-item:hover .delete { opacity: 1; }
         
         .content-section { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
         .content-card { background: #242424; border-radius: 10px; padding: 12px; border: 1px solid #333; }
@@ -106,10 +105,10 @@
         </header>
         
         <div class="stats-row">
-            <div class="stat-card"><h3>Players</h3><div class="value"><button class="stat-btn" data-action="adjust" data-stat="playersCurrent" data-delta="-1">-</button><input type="text" id="playersCurrent" data-action="save"><button class="stat-btn" data-action="adjust" data-stat="playersCurrent" data-delta="1">+</button></div></div>
-            <div class="stat-card"><h3>Target</h3><div class="value"><button class="stat-btn" data-action="adjust" data-stat="playersTarget" data-delta="-10">-</button><input type="text" id="playersTarget" data-action="save"><button class="stat-btn" data-action="adjust" data-stat="playersTarget" data-delta="10">+</button></div></div>
-            <div class="stat-card"><h3>Merchants</h3><div class="value"><button class="stat-btn" data-action="adjust" data-stat="merchantsCurrent" data-delta="-1">-</button><input type="text" id="merchantsCurrent" data-action="save"><button class="stat-btn" data-action="adjust" data-stat="merchantsCurrent" data-delta="1">+</button></div></div>
-            <div class="stat-card"><h3>Day</h3><div class="value"><button class="stat-btn" data-action="adjust" data-stat="appDay" data-delta="-1">-</button><input type="text" id="appDay" data-action="save"><button class="stat-btn" data-action="adjust" data-stat="appDay" data-delta="1">+</button></div></div>
+            <div class="stat-card"><h3>Players</h3><div class="value"><button class="stat-btn" data-stat="playersCurrent" data-delta="-1">-</button><input type="text" id="playersCurrent"><button class="stat-btn" data-stat="playersCurrent" data-delta="1">+</button></div></div>
+            <div class="stat-card"><h3>Target</h3><div class="value"><button class="stat-btn" data-stat="playersTarget" data-delta="-10">-</button><input type="text" id="playersTarget"><button class="stat-btn" data-stat="playersTarget" data-delta="10">+</button></div></div>
+            <div class="stat-card"><h3>Merchants</h3><div class="value"><button class="stat-btn" data-stat="merchantsCurrent" data-delta="-1">-</button><input type="text" id="merchantsCurrent"><button class="stat-btn" data-stat="merchantsCurrent" data-delta="1">+</button></div></div>
+            <div class="stat-card"><h3>Day</h3><div class="value"><button class="stat-btn" data-stat="appDay" data-delta="-1">-</button><input type="text" id="appDay"><button class="stat-btn" data-stat="appDay" data-delta="1">+</button></div></div>
         </div>
         
         <div class="progress-section">
@@ -121,32 +120,31 @@
         <div class="kanban-section">
             <div class="kanban-title">🏪 Merchant Acquisition</div>
             <div class="kanban-grid">
-                <div class="kanban-col" id="kanban-todo"><h4>TODO <button class="kanban-add" data-action="addTask" data-col="todo">+</button></h4></div>
-                <div class="kanban-col" id="kanban-progress"><h4>IN PROGRESS <button class="kanban-add" data-action="addTask" data-col="progress">+</button></h4></div>
-                <div class="kanban-col" id="kanban-done"><h4>DONE <button class="kanban-add" data-action="addTask" data-col="done">+</button></h4></div>
+                <div class="kanban-col" id="kanban-todo"><h4>TODO <button class="kanban-add" data-col="todo">+</button></h4></div>
+                <div class="kanban-col" id="kanban-progress"><h4>IN PROGRESS <button class="kanban-add" data-col="progress">+</button></h4></div>
+                <div class="kanban-col" id="kanban-done"><h4>DONE <button class="kanban-add" data-col="done">+</button></h4></div>
             </div>
         </div>
         
         <div class="content-section">
-            <div class="content-card"><h3>TODAY'S CONTENT</h3><input type="text" id="contentToday" data-action="save"></div>
-            <div class="content-card"><h3>TOMORROW'S CONTENT</h3><input type="text" id="contentTomorrow" data-action="save"></div>
+            <div class="content-card"><h3>TODAY'S CONTENT</h3><input type="text" id="contentToday"></div>
+            <div class="content-card"><h3>TOMORROW'S CONTENT</h3><input type="text" id="contentTomorrow"></div>
         </div>
         
-        <div class="task-section"><h3>🎯 TODAY'S LAUNCH TASK</h3><input type="text" id="todaysTask" data-action="save"></div>
+        <div class="task-section"><h3>🎯 TODAY'S LAUNCH TASK</h3><input type="text" id="todaysTask"></div>
         
         <div class="competitor-grid">
-            <div class="competitor-item"><strong>Pokemon GO</strong><input type="text" id="competitor0" placeholder="Check for new features" data-action="save"></div>
-            <div class="competitor-item"><strong>Starbucks</strong><input type="text" id="competitor1" placeholder="Loyalty innovations" data-action="save"></div>
-            <div class="competitor-item"><strong>Stepn</strong><input type="text" id="competitor2" placeholder="Web3 gaming sentiment" data-action="save"></div>
-            <div class="competitor-item"><strong>Local SEA</strong><input type="text" id="competitor3" placeholder="Regional competitors" data-action="save"></div>
+            <div class="competitor-item"><strong>Pokemon GO</strong><input type="text" id="competitor0" placeholder="Check for new features"></div>
+            <div class="competitor-item"><strong>Starbucks</strong><input type="text" id="competitor1" placeholder="Loyalty innovations"></div>
+            <div class="competitor-item"><strong>Stepn</strong><input type="text" id="competitor2" placeholder="Web3 gaming sentiment"></div>
+            <div class="competitor-item"><strong>Local SEA</strong><input type="text" id="competitor3" placeholder="Regional competitors"></div>
         </div>
     </div>
     
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = 'https://fkhyriqnxpnckwoxafrv.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZraHlyaXFueHBuY2t3b3hhZnJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5ODYxOTMsImV4cCI6MjA4NTU2MjE5M30._c5ZLJoJpvdzumz4HT8PbqvAUO0nO3DJOtq8EMFtd6E';
-        
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         let data = {
             streak: 0, appStatus: 'In Review', appDay: 3, playersCurrent: 0, playersTarget: 100, merchantsCurrent: 2,
@@ -155,6 +153,9 @@
             contentToday: 'Behind-the-scenes dev screenshot', contentTomorrow: 'Gacha pull teaser video',
             todaysTask: 'Draft 5 tweets showcasing gacha animation', competitors: ['', '', '', '']
         };
+        
+        // Show dashboard immediately
+        document.getElementById('dashboard').style.display = 'block';
         
         function loadData() {
             const local = localStorage.getItem('regaia_dashboard');
@@ -168,9 +169,11 @@
         
         function saveData() {
             localStorage.setItem('regaia_dashboard', JSON.stringify(data));
-            supabase.from('regaia_dashboard').upsert({
-                id: 'main', data: data, updated_at: new Date().toISOString()
-            }, { upsert: true }).catch(() => {});
+            if (typeof supabase !== 'undefined') {
+                supabase.from('regaia_dashboard').upsert({
+                    id: 'main', data: data, updated_at: new Date().toISOString()
+                }, { upsert: true }).catch(() => {});
+            }
         }
         
         function renderAll() {
@@ -186,7 +189,7 @@
             document.getElementById('progressPercent').textContent = percent + '%';
             
             document.getElementById('checklistRow').innerHTML = data.checklist.map((item, idx) => 
-                `<div class="check-item ${item.checked ? 'checked' : ''}" data-action="toggleCheck" data-idx="${idx}"><div class="check"></div><span>${item.label}</span></div>`
+                '<div class="check-item ' + (item.checked ? 'checked' : '') + '" data-idx="' + idx + '"><div class="check"></div><span>' + item.label + '</span></div>'
             ).join('');
             
             document.getElementById('contentToday').value = data.contentToday;
@@ -201,16 +204,16 @@
         }
         
         function renderKanban() {
-            ['todo', 'progress', 'done'].forEach(col => {
+            ['todo', 'progress', 'done'].forEach(function(col) {
                 const items = data.merchants[col] || [];
                 document.getElementById('kanban-' + col).innerHTML = 
-                    `<h4>${col.toUpperCase()} <button class="kanban-add" data-action="addTask" data-col="${col}">+</button></h4>` +
-                    items.map((text, idx) => 
-                        `<div class="kanban-item" data-col="${col}" data-idx="${idx}"><span>${text}</span><button class="delete" data-action="deleteTask" data-col="${col}" data-idx="${idx}">×</button></div>`
-                    ).join('');
+                    '<h4>' + col.toUpperCase() + ' <button class="kanban-add" data-col="' + col + '">+</button></h4>' +
+                    items.map(function(text, idx) {
+                        return '<div class="kanban-item" data-col="' + col + '" data-idx="' + idx + '"><span>' + text + '</span><button class="delete" data-col="' + col + '" data-idx="' + idx + '">×</button></div>';
+                    }).join('');
             });
             
-            ['todo', 'progress', 'done'].forEach(col => {
+            ['todo', 'progress', 'done'].forEach(function(col) {
                 new Sortable(document.getElementById('kanban-' + col), {
                     group: 'merchants', animation: 150,
                     onEnd: function(evt) {
@@ -263,30 +266,54 @@
         }
         
         document.addEventListener('click', function(e) {
-            const action = e.target.dataset.action;
-            if (!action) return;
+            const target = e.target;
             
-            if (action === 'adjust') {
-                adjustStat(e.target.dataset.stat, parseInt(e.target.dataset.delta));
-            } else if (action === 'addTask') {
-                addTask(e.target.dataset.col);
-            } else if (action === 'deleteTask') {
-                const el = e.target.closest('[data-col]');
-                if (el) deleteTask(el.dataset.col, parseInt(el.dataset.idx));
-            } else if (action === 'toggleCheck') {
-                const el = e.target.closest('[data-idx]');
-                if (el) toggleCheck(parseInt(el.dataset.idx));
+            if (target.classList.contains('stat-btn')) {
+                adjustStat(target.dataset.stat, parseInt(target.dataset.delta));
+                return;
+            }
+            
+            if (target.classList.contains('kanban-add')) {
+                addTask(target.dataset.col);
+                return;
+            }
+            
+            if (target.classList.contains('delete')) {
+                const item = target.closest('.kanban-item');
+                if (item) {
+                    deleteTask(item.dataset.col, parseInt(item.dataset.idx));
+                }
+                return;
+            }
+            
+            if (target.classList.contains('check-item') || target.closest('.check-item')) {
+                const el = target.classList.contains('check-item') ? target : target.closest('.check-item');
+                toggleCheck(parseInt(el.dataset.idx));
+                return;
             }
         });
         
-        document.querySelectorAll('input[data-action="save"]').forEach(input => {
-            input.addEventListener('change', function() {
-                data[this.id] = this.value;
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            if (typeof supabase !== 'undefined') {
+                supabase.auth.signOut().then(function() { location.reload(); });
+            } else {
+                location.reload();
+            }
+        });
+        
+        ['contentToday', 'contentTomorrow', 'todaysTask', 'competitor0', 'competitor1', 'competitor2', 'competitor3'].forEach(function(id) {
+            document.getElementById(id).addEventListener('change', function() {
+                data[id] = this.value;
                 saveData();
             });
         });
         
-        document.getElementById('logoutBtn').addEventListener('click', () => supabase.auth.signOut().then(() => location.reload()));
+        ['playersCurrent', 'playersTarget', 'merchantsCurrent', 'appDay'].forEach(function(id) {
+            document.getElementById(id).addEventListener('change', function() {
+                data[id] = parseInt(this.value) || 0;
+                saveData();
+            });
+        });
         
         loadData();
         renderAll();
