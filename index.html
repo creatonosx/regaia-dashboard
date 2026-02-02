@@ -59,7 +59,6 @@
             margin-bottom: 12px;
         }
         .auth-btn:hover { background: #444; }
-        .auth-btn.secondary { background: #2a2a2a; border: 1px solid #333; }
         .auth-error { color: #ef4444; font-size: 0.85rem; margin-top: 12px; display: none; }
         .auth-success { color: #10b981; font-size: 0.85rem; margin-top: 12px; display: none; }
         
@@ -94,7 +93,6 @@
         }
         .logout-btn:hover { border-color: #666; color: #fff; }
         
-        /* Cards */
         .card {
             background: #242424;
             border-radius: 12px;
@@ -270,12 +268,11 @@
     <!-- Auth Screen -->
     <div id="auth-screen">
         <h1>🚀 Regaia Mission Control</h1>
-        <p>Sign in with OTP to access your dashboard</p>
+        <p>Enter OTP sent to your authorized email</p>
         <div class="auth-box">
-            <input type="email" id="email" class="auth-input" placeholder="Email" value="horihimewonder@proton.me">
-            <button onclick="sendOTP()" class="auth-btn">Send OTP</button>
-            <input type="text" id="otp" class="auth-input" placeholder="Enter OTP" style="display:none;">
-            <button onclick="verifyOTP()" id="verify-btn" class="auth-btn" style="display:none;">Verify OTP</button>
+            <input type="text" id="otp" class="auth-input" placeholder="Enter OTP">
+            <button onclick="verifyOTP()" class="auth-btn">Verify OTP</button>
+            <button onclick="resendOTP()" class="auth-btn secondary">Resend OTP</button>
             <p class="auth-error" id="auth-error"></p>
             <p class="auth-success" id="auth-success"></p>
         </div>
@@ -409,6 +406,7 @@
         // Supabase Configuration
         const SUPABASE_URL = 'https://fkhyriqnxpnckwoxafrv.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZraHlyaXFueHBuY2t3b3hhZnJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5ODYxOTMsImV4cCI6MjA4NTU2MjE5M30._c5ZLJoJpvdzumz4HT8PbqvAUO0nO3DJOtq8EMFtd6E';
+        const AUTHORIZED_EMAIL = 'horihimewonder@proton.me';
         
         const { createClient } = supabase;
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -465,9 +463,8 @@
             });
         }
         
-        // Auth Functions
+        // Auto-send OTP on load
         async function sendOTP() {
-            const email = document.getElementById('email').value;
             const errorEl = document.getElementById('auth-error');
             const successEl = document.getElementById('auth-success');
             
@@ -475,7 +472,7 @@
             successEl.style.display = 'none';
             
             const { error } = await supabaseClient.auth.signInWithOtp({
-                email: email,
+                email: AUTHORIZED_EMAIL,
                 options: {
                     emailRedirectTo: window.location.href
                 }
@@ -485,22 +482,23 @@
                 errorEl.textContent = error.message;
                 errorEl.style.display = 'block';
             } else {
-                successEl.textContent = 'OTP sent to your email! Check inbox.';
+                successEl.textContent = 'OTP sent to ' + AUTHORIZED_EMAIL;
                 successEl.style.display = 'block';
-                document.getElementById('otp').style.display = 'block';
-                document.getElementById('verify-btn').style.display = 'block';
             }
         }
         
+        async function resendOTP() {
+            await sendOTP();
+        }
+        
         async function verifyOTP() {
-            const email = document.getElementById('email').value;
             const token = document.getElementById('otp').value;
             const errorEl = document.getElementById('auth-error');
             
             errorEl.style.display = 'none';
             
             const { error } = await supabaseClient.auth.verifyOtp({
-                email: email,
+                email: AUTHORIZED_EMAIL,
                 token: token
             });
             
@@ -517,6 +515,8 @@
         function showAuth() {
             document.getElementById('auth-screen').style.display = 'flex';
             document.getElementById('dashboard').style.display = 'none';
+            // Auto-send OTP when showing auth screen
+            setTimeout(sendOTP, 500);
         }
         
         function showDashboard() {
