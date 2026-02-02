@@ -117,7 +117,7 @@
             color: #fff;
             font-size: 1.8rem;
             font-weight: 700;
-            width: 100px;
+            width: 80px;
             text-align: center;
         }
         .stat-card .value input:focus { outline: none; border-bottom: 1px solid #555; }
@@ -253,16 +253,6 @@
         }
         .kanban-item:hover .delete { opacity: 1; }
         .kanban-item .delete:hover { color: #ef4444; }
-        .kanban-input {
-            width: 100%;
-            background: #2a2a2a;
-            border: 1px solid #333;
-            border-radius: 4px;
-            padding: 8px;
-            color: #fff;
-            font-size: 0.85rem;
-            margin-top: 8px;
-        }
         
         /* Content Section */
         .content-section {
@@ -288,7 +278,7 @@
             font-size: 0.95rem;
         }
         
-        /* Today's Task */
+        /* Task Section */
         .task-section {
             background: #242424;
             border-radius: 12px;
@@ -338,7 +328,6 @@
     </style>
 </head>
 <body>
-    <!-- Auth Screen -->
     <div id="auth-screen">
         <h1 style="margin-bottom:16px;">🚀 Regaia Mission Control</h1>
         <p style="margin-bottom:24px;color:#888;">Sign in to access your dashboard</p>
@@ -350,7 +339,6 @@
         </div>
     </div>
     
-    <!-- Dashboard -->
     <div id="dashboard">
         <header>
             <div class="header-left">
@@ -360,60 +348,55 @@
             <button onclick="signOut()" class="logout-btn">Sign Out</button>
         </header>
         
-        <!-- Stats Row -->
         <div class="stats-row">
             <div class="stat-card">
                 <h3>Players</h3>
                 <div class="value">
-                    <button class="stat-btn" onclick="adjustStat('players', -1)">-</button>
-                    <input type="text" id="players-current" value="0" onchange="saveData()">
-                    <button class="stat-btn" onclick="adjustStat('players', 1)">+</button>
+                    <button class="stat-btn" onclick="adjustStat('playersCurrent', -1)">-</button>
+                    <input type="text" id="playersCurrent" onchange="saveData()">
+                    <button class="stat-btn" onclick="adjustStat('playersCurrent', 1)">+</button>
                 </div>
             </div>
             <div class="stat-card">
-                <h3>Players Target</h3>
+                <h3>Target</h3>
                 <div class="value">
                     <button class="stat-btn" onclick="adjustStat('playersTarget', -10)">-</button>
-                    <input type="text" id="players-target" value="100" onchange="saveData()">
+                    <input type="text" id="playersTarget" onchange="saveData()">
                     <button class="stat-btn" onclick="adjustStat('playersTarget', 10)">+</button>
                 </div>
             </div>
             <div class="stat-card">
                 <h3>Merchants</h3>
                 <div class="value">
-                    <button class="stat-btn" onclick="adjustStat('merchants', -1)">-</button>
-                    <input type="text" id="merchants-current" value="2" onchange="saveData()">
-                    <button class="stat-btn" onclick="adjustStat('merchants', 1)">+</button>
+                    <button class="stat-btn" onclick="adjustStat('merchantsCurrent', -1)">-</button>
+                    <input type="text" id="merchantsCurrent" onchange="saveData()">
+                    <button class="stat-btn" onclick="adjustStat('merchantsCurrent', 1)">+</button>
                 </div>
             </div>
             <div class="stat-card">
                 <h3>Day</h3>
                 <div class="value">
-                    <button class="stat-btn" onclick="adjustStat('day', -1)">-</button>
-                    <input type="text" id="app-day" value="3" onchange="saveData()">
-                    <button class="stat-btn" onclick="adjustStat('day', 1)">+</button>
+                    <button class="stat-btn" onclick="adjustStat('appDay', -1)">-</button>
+                    <input type="text" id="appDay" onchange="saveData()">
+                    <button class="stat-btn" onclick="adjustStat('appDay', 1)">+</button>
                 </div>
             </div>
         </div>
         
-        <!-- App Status Progress -->
         <div class="progress-section">
             <div class="progress-header">
                 <div class="progress-title">📱 App Status</div>
                 <div class="progress-stats">
-                    <span id="app-status">In Review</span>
-                    <span id="progress-percent">60%</span>
+                    <span id="appStatus">In Review</span>
+                    <span id="progressPercent">60%</span>
                 </div>
             </div>
             <div class="progress-bar">
-                <div class="progress-fill" id="app-progress" style="width: 60%"></div>
+                <div class="progress-fill" id="appProgress" style="width: 60%"></div>
             </div>
-            <div class="checklist-row" id="checklist-row">
-                <!-- Populated by JS -->
-            </div>
+            <div class="checklist-row" id="checklistRow"></div>
         </div>
         
-        <!-- Merchant Kanban -->
         <div class="kanban-section">
             <div class="kanban-header">
                 <div class="kanban-title">🏪 Merchant Acquisition</div>
@@ -431,53 +414,49 @@
             </div>
         </div>
         
-        <!-- Content & Task -->
         <div class="content-section">
             <div class="content-card">
                 <h3>TODAY'S CONTENT</h3>
-                <input type="text" id="content-today" value="Behind-the-scenes dev screenshot" onchange="saveData()">
+                <input type="text" id="contentToday" onchange="saveData()">
             </div>
             <div class="content-card">
                 <h3>TOMORROW'S CONTENT</h3>
-                <input type="text" id="content-tomorrow" value="Gacha pull teaser video" onchange="saveData()">
+                <input type="text" id="contentTomorrow" onchange="saveData()">
             </div>
         </div>
         
         <div class="task-section">
             <h3>🎯 TODAY'S LAUNCH TASK</h3>
-            <input type="text" id="todays-task" value="Draft 5 tweets showcasing gacha animation" onchange="saveData()">
+            <input type="text" id="todaysTask" onchange="saveData()">
         </div>
         
-        <!-- Competitor Watch -->
         <div class="competitor-grid">
             <div class="competitor-item">
                 <strong>Pokemon GO</strong>
-                <input type="text" placeholder="Check for new features" id="competitor-1" onchange="saveData()">
+                <input type="text" id="competitor0" placeholder="Check for new features" onchange="saveData()">
             </div>
             <div class="competitor-item">
                 <strong>Starbucks</strong>
-                <input type="text" placeholder="Loyalty innovations" id="competitor-2" onchange="saveData()">
+                <input type="text" id="competitor1" placeholder="Loyalty innovations" onchange="saveData()">
             </div>
             <div class="competitor-item">
                 <strong>Stepn</strong>
-                <input type="text" placeholder="Web3 gaming sentiment" id="competitor-3" onchange="saveData()">
+                <input type="text" id="competitor2" placeholder="Web3 gaming sentiment" onchange="saveData()">
             </div>
             <div class="competitor-item">
                 <strong>Local SEA</strong>
-                <input type="text" placeholder="Regional competitors" id="competitor-4" onchange="saveData()">
+                <input type="text" id="competitor3" placeholder="Regional competitors" onchange="saveData()">
             </div>
         </div>
     </div>
     
     <script>
-        // Supabase Configuration
         const SUPABASE_URL = 'https://fkhyriqnxpnckwoxafrv.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZraHlyaXFueHBuY2t3b3hhZnJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5ODYxOTMsImV4cCI6MjA4NTU2MjE5M30._c5ZLJoJpvdzumz4HT8PbqvAUO0nO3DJOtq8EMFtd6E';
         
         const { createClient } = supabase;
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        // Data structure
         let data = {
             streak: 0,
             appStatus: 'In Review',
@@ -492,18 +471,13 @@
                 { label: 'Press Kit', checked: false },
                 { label: 'Launch Content', checked: false }
             ],
-            merchants: {
-                todo: ['Gaming Cafe A', 'Gaming Cafe B'],
-                progress: [],
-                done: []
-            },
+            merchants: { todo: ['Gaming Cafe A', 'Gaming Cafe B'], progress: [], done: [] },
             contentToday: 'Behind-the-scenes dev screenshot',
             contentTomorrow: 'Gacha pull teaser video',
             todaysTask: 'Draft 5 tweets showcasing gacha animation',
             competitors: ['', '', '', '']
         };
         
-        // Initialize
         async function init() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
@@ -526,16 +500,13 @@
             });
         }
         
-        // Auth
         async function signIn() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const errorEl = document.getElementById('auth-error');
-            
             const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
             if (error) {
-                errorEl.textContent = error.message;
-                errorEl.style.display = 'block';
+                document.getElementById('auth-error').textContent = error.message;
+                document.getElementById('auth-error').style.display = 'block';
             }
         }
         
@@ -543,62 +514,72 @@
             await supabaseClient.auth.signOut();
         }
         
-        // Data Functions
         async function loadData() {
-            const { data: row } = await supabase.from('regaia_dashboard').select('*').eq('id', 'main').single();
-            if (row) data = { ...data, ...row };
+            // Try Supabase first
+            try {
+                const { data: row } = await supabase.from('regaia_dashboard').select('*').eq('id', 'main').maybeSingle();
+                if (row && row.data) {
+                    data = { ...data, ...row.data };
+                }
+            } catch (e) {
+                console.log('Supabase not available, using local storage');
+            }
+            // Always sync with localStorage as backup
+            const local = localStorage.getItem('regaia_dashboard');
+            if (local) {
+                const parsed = JSON.parse(local);
+                data = { ...data, ...parsed };
+            }
         }
         
         async function saveData() {
-            await supabase.from('regaia_dashboard').upsert({
-                id: 'main',
-                ...data,
-                updated_at: new Date().toISOString()
-            });
+            localStorage.setItem('regaia_dashboard', JSON.stringify(data));
+            // Try Supabase (will fail if table doesn't exist)
+            try {
+                await supabase.from('regaia_dashboard').upsert({
+                    id: 'main',
+                    data: data,
+                    updated_at: new Date().toISOString()
+                });
+            } catch (e) {
+                // Table doesn't exist yet
+            }
         }
         
-        // Render
         function renderAll() {
-            // Stats
             document.getElementById('streak').textContent = data.streak;
-            document.getElementById('players-current').value = data.playersCurrent;
-            document.getElementById('players-target').value = data.playersTarget;
-            document.getElementById('merchants-current').value = data.merchantsCurrent;
-            document.getElementById('app-day').value = data.appDay;
+            document.getElementById('playersCurrent').value = data.playersCurrent;
+            document.getElementById('playersTarget').value = data.playersTarget;
+            document.getElementById('merchantsCurrent').value = data.merchantsCurrent;
+            document.getElementById('appDay').value = data.appDay;
             
-            // Checklist
             const checked = data.checklist.filter(c => c.checked).length;
             const percent = Math.round((checked / data.checklist.length) * 100);
-            document.getElementById('app-progress').style.width = percent + '%';
-            document.getElementById('progress-percent').textContent = percent + '%';
+            document.getElementById('appProgress').style.width = percent + '%';
+            document.getElementById('progressPercent').textContent = percent + '%';
             
-            const checklistHTML = data.checklist.map((item, idx) => `
+            document.getElementById('checklistRow').innerHTML = data.checklist.map((item, idx) => `
                 <div class="check-item ${item.checked ? 'checked' : ''}" onclick="toggleCheck(${idx})">
                     <div class="check"></div>
                     <span>${item.label}</span>
                 </div>
             `).join('');
-            document.getElementById('checklist-row').innerHTML = checklistHTML;
             
-            // Content & Task
-            document.getElementById('content-today').value = data.contentToday;
-            document.getElementById('content-tomorrow').value = data.contentTomorrow;
-            document.getElementById('todays-task').value = data.todaysTask;
+            document.getElementById('contentToday').value = data.contentToday;
+            document.getElementById('contentTomorrow').value = data.contentTomorrow;
+            document.getElementById('todaysTask').value = data.todaysTask;
             
-            // Competitors
             for (let i = 0; i < 4; i++) {
-                document.getElementById('competitor-' + (i+1)).value = data.competitors[i] || '';
+                document.getElementById('competitor' + i).value = data.competitors[i] || '';
             }
             
-            // Kanban
             renderKanban();
         }
         
         function renderKanban() {
             ['todo', 'progress', 'done'].forEach(col => {
-                const container = document.getElementById('kanban-' + col);
                 const items = data.merchants[col] || [];
-                container.innerHTML = `
+                document.getElementById('kanban-' + col).innerHTML = `
                     <h4>${col.toUpperCase()} <button class="kanban-add" onclick="addTask('${col}')">+</button></h4>
                     ${items.map((text, idx) => `
                         <div class="kanban-item" data-col="${col}" data-idx="${idx}">
@@ -609,7 +590,6 @@
                 `;
             });
             
-            // Enable drag & drop
             ['todo', 'progress', 'done'].forEach(col => {
                 new Sortable(document.getElementById('kanban-' + col), {
                     group: 'merchants',
@@ -617,7 +597,7 @@
                     onEnd: function(evt) {
                         const fromCol = evt.from.getAttribute('id').replace('kanban-', '');
                         const toCol = evt.to.getAttribute('id').replace('kanban-', '');
-                        const fromIdx = evt.oldIndex - 1; // subtract header
+                        const fromIdx = evt.oldIndex - 1;
                         const toIdx = evt.newIndex - 1;
                         moveTask(fromCol, toCol, fromIdx, toIdx);
                     }
@@ -625,20 +605,11 @@
             });
         }
         
-        // Actions
         function adjustStat(stat, delta) {
-            const el = document.getElementById(stat.includes('Target') ? stat : stat + (stat === 'day' ? '' : '-current'));
-            if (el) {
-                let val = parseInt(el.value) || 0;
-                val += delta;
-                if (val < 0) val = 0;
-                el.value = val;
-                if (stat === 'players') data.playersCurrent = val;
-                else if (stat === 'playersTarget') data.playersTarget = val;
-                else if (stat === 'merchants') data.merchantsCurrent = val;
-                else if (stat === 'day') data.appDay = val;
-                saveData();
-            }
+            data[stat] = (data[stat] || 0) + delta;
+            if (data[stat] < 0) data[stat] = 0;
+            document.getElementById(stat).value = data[stat];
+            saveData();
         }
         
         function toggleCheck(idx) {
@@ -658,7 +629,7 @@
         }
         
         function deleteTask(col, idx) {
-            if (confirm('Delete this task?')) {
+            if (confirm('Delete?')) {
                 data.merchants[col].splice(idx, 1);
                 renderAll();
                 saveData();
@@ -672,19 +643,15 @@
             saveData();
         }
         
-        // Content updates
-        ['content-today', 'content-tomorrow', 'todays-task'].forEach(id => {
+        ['contentToday', 'contentTomorrow', 'todaysTask'].forEach(id => {
             document.getElementById(id).addEventListener('change', function() {
-                if (id === 'content-today') data.contentToday = this.value;
-                else if (id === 'content-tomorrow') data.contentTomorrow = this.value;
-                else if (id === 'todays-task') data.todaysTask = this.value;
+                data[id] = this.value;
                 saveData();
             });
         });
         
-        // Competitor updates
         for (let i = 0; i < 4; i++) {
-            document.getElementById('competitor-' + (i+1)).addEventListener('change', function() {
+            document.getElementById('competitor' + i).addEventListener('change', function() {
                 data.competitors[i] = this.value;
                 saveData();
             });
