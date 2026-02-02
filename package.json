@@ -1,0 +1,13 @@
+{
+  "name": "regaia-dashboard",
+  "version": "1.0.0",
+  "description": "Regaia Mission Control Dashboard with Basic Auth",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "basic-auth": "^2.0.1"
+  }
+}

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Regaia Mission Control</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -15,7 +16,55 @@
         }
         .container { max-width: 900px; margin: 0 auto; }
         
-        /* Header */
+        /* Auth Screen */
+        #auth-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+            text-align: center;
+        }
+        #auth-screen h1 { font-size: 2rem; margin-bottom: 8px; color: #fff; }
+        #auth-screen p { color: #888; margin-bottom: 30px; }
+        .auth-box {
+            background: #242424;
+            padding: 40px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            width: 100%;
+            max-width: 360px;
+        }
+        .auth-input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: #2a2a2a;
+            color: #fff;
+            font-size: 1rem;
+            margin-bottom: 12px;
+        }
+        .auth-input:focus { outline: none; border-color: #555; }
+        .auth-btn {
+            width: 100%;
+            padding: 14px;
+            background: #333;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 12px;
+        }
+        .auth-btn:hover { background: #444; }
+        .auth-btn.secondary { background: #2a2a2a; border: 1px solid #333; }
+        .auth-error { color: #ef4444; font-size: 0.85rem; margin-top: 12px; display: none; }
+        
+        /* Dashboard */
+        #dashboard { display: none; }
+        
         header {
             display: flex;
             justify-content: space-between;
@@ -32,6 +81,17 @@
             font-size: 0.9rem;
         }
         .streak span { color: #f59e0b; font-weight: 600; }
+        .logout-btn {
+            background: none;
+            border: 1px solid #444;
+            color: #888;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-left: 12px;
+        }
+        .logout-btn:hover { border-color: #666; color: #fff; }
         
         /* Cards */
         .card {
@@ -214,67 +274,6 @@
         }
         .competitor-item strong { color: #fff; }
         
-        /* Auth Overlay */
-        #auth-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: #1a1a1a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        #auth-overlay.hidden { display: none; }
-        .auth-box {
-            background: #242424;
-            padding: 40px;
-            border-radius: 12px;
-            text-align: center;
-            border: 1px solid #333;
-            max-width: 360px;
-            width: 90%;
-        }
-        .auth-box h2 { margin-bottom: 20px; color: #fff; }
-        .auth-input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #333;
-            border-radius: 8px;
-            background: #2a2a2a;
-            color: #fff;
-            font-size: 1rem;
-            margin-bottom: 16px;
-        }
-        .auth-input:focus { outline: none; border-color: #555; }
-        .auth-btn {
-            width: 100%;
-            padding: 12px;
-            background: #333;
-            border: none;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .auth-btn:hover { background: #444; }
-        .auth-error { color: #ef4444; font-size: 0.85rem; margin-top: 12px; display: none; }
-        
-        /* Inline Edit Mode */
-        .editable { cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: background 0.2s; }
-        .editable:hover { background: #333; }
-        .editable.active { background: #333; }
-        .editable input { 
-            background: #1a1a1a; 
-            border: 1px solid #555; 
-            border-radius: 4px; 
-            padding: 4px 8px; 
-            color: #fff; 
-            font-size: inherit;
-            font-family: inherit;
-            width: 100%;
-        }
-        
         @media (max-width: 600px) {
             .stats-grid, .financial-grid, .competitor-grid { grid-template-columns: 1fr; }
             .content-row { flex-direction: column; }
@@ -282,21 +281,27 @@
     </style>
 </head>
 <body>
-    <!-- Auth Overlay -->
-    <div id="auth-overlay">
+    <!-- Auth Screen -->
+    <div id="auth-screen">
+        <h1>🚀 Regaia Mission Control</h1>
+        <p>Sign in to access your dashboard</p>
         <div class="auth-box">
-            <h2>🔐 Enter Password</h2>
-            <input type="password" id="auth-password" class="auth-input" placeholder="Enter dashboard password">
-            <button onclick="checkAuth()" class="auth-btn">Access Dashboard</button>
-            <p class="auth-error" id="auth-error">Incorrect password</p>
+            <input type="email" id="email" class="auth-input" placeholder="Email" value="horihimewonder@proton.me">
+            <input type="password" id="password" class="auth-input" placeholder="Password">
+            <button onclick="signIn()" class="auth-btn">Sign In</button>
+            <button onclick="signUp()" class="auth-btn secondary">Create Account</button>
+            <p class="auth-error" id="auth-error"></p>
         </div>
     </div>
     
     <!-- Dashboard -->
-    <div class="container" id="dashboard" style="display: none;">
+    <div id="dashboard">
         <header>
             <h1>🚀 Regaia Mission Control</h1>
-            <div class="streak">🔥 <span id="streak-display">0</span> day streak</div>
+            <div style="display:flex;align-items:center;">
+                <div class="streak">🔥 <span id="streak-display">0</span> day streak</div>
+                <button onclick="signOut()" class="logout-btn">Sign Out</button>
+            </div>
         </header>
         
         <!-- App Status -->
@@ -312,9 +317,7 @@
                 <span id="app-status">In Review</span>
                 <span id="app-day">Day 3</span>
             </div>
-            <div class="checklist" id="app-checklist">
-                <!-- Populated by JS -->
-            </div>
+            <div class="checklist" id="app-checklist"></div>
         </div>
         
         <!-- Financial Goals -->
@@ -345,15 +348,15 @@
             </div>
             <div class="stats-grid">
                 <div class="stat-item">
-                    <div class="stat-value editable" id="players-current">0</div>
+                    <div class="stat-value" id="players-current">0</div>
                     <div class="stat-label">Players (Current)</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-value editable" id="players-target">100</div>
+                    <div class="stat-value" id="players-target">100</div>
                     <div class="stat-label">Players (Target)</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-value editable" id="merchants-current">2</div>
+                    <div class="stat-value" id="merchants-current">2</div>
                     <div class="stat-label">Merchants</div>
                 </div>
             </div>
@@ -371,9 +374,7 @@
             <div class="progress-text">
                 <span><span id="merchants-display">2</span>/10 Merchants</span>
             </div>
-            <div class="task-list" id="merchant-list">
-                <!-- Populated by JS -->
-            </div>
+            <div class="task-list" id="merchant-list"></div>
         </div>
         
         <!-- Content Calendar -->
@@ -385,11 +386,11 @@
             <div class="content-row">
                 <div class="content-box">
                     <h5>TODAY</h5>
-                    <p class="editable" id="content-today">Behind-the-scenes dev screenshot</p>
+                    <p id="content-today">Behind-the-scenes dev screenshot</p>
                 </div>
                 <div class="content-box">
                     <h5>TOMORROW</h5>
-                    <p class="editable" id="content-tomorrow">Gacha pull teaser video</p>
+                    <p id="content-tomorrow">Gacha pull teaser video</p>
                 </div>
             </div>
         </div>
@@ -399,7 +400,7 @@
             <div class="card-header">
                 <div class="card-title">🎯 Today's Launch Task</div>
             </div>
-            <input type="text" class="task-input editable" id="todays-task" value="Draft 5 tweets showcasing gacha animation">
+            <input type="text" class="task-input" id="todays-task" value="Draft 5 tweets showcasing gacha animation">
         </div>
         
         <!-- Competitor Watch -->
@@ -409,30 +410,23 @@
                 <button class="edit-btn" onclick="toggleEdit(this)">Edit</button>
             </div>
             <div class="competitor-grid">
-                <div class="competitor-item">
-                    <strong>Pokemon GO</strong> - Check for new features
-                </div>
-                <div class="competitor-item">
-                    <strong>Starbucks</strong> - Loyalty innovations
-                </div>
-                <div class="competitor-item">
-                    <strong>Stepn</strong> - Web3 gaming sentiment
-                </div>
-                <div class="competitor-item">
-                    <strong>Local SEA</strong> - Regional competitors
-                </div>
+                <div class="competitor-item"><strong>Pokemon GO</strong> - Check for new features</div>
+                <div class="competitor-item"><strong>Starbucks</strong> - Loyalty innovations</div>
+                <div class="competitor-item"><strong>Stepn</strong> - Web3 gaming sentiment</div>
+                <div class="competitor-item"><strong>Local SEA</strong> - Regional competitors</div>
             </div>
         </div>
     </div>
     
     <script>
-        // Dashboard Configuration
-        const CONFIG = {
-            passwordHash: null, // Set dynamically from env
-            dataKey: 'regaia_dashboard_data'
-        };
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://fkhyriqnxpnckwoxafrv.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZraHlyaXFueHBuY2t3b3hhZnJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5ODYxOTMsImV4cCI6MjA4NTU2MjE5M30._c5ZLJoJpvdzumz4HT8PbqvAUO0nO3DJOtq8EMFtd6E';
         
-        // Default Data
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Data
         const defaultData = {
             streak: 2,
             appStatus: 'In Review',
@@ -465,25 +459,85 @@
         let isEditMode = false;
         
         // Initialize
-        function init() {
-            loadData();
-            renderAll();
-            setupInlineEditing();
+        async function init() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                showDashboard();
+                await loadData();
+                renderAll();
+            }
+            
+            supabaseClient.auth.onAuthStateChange(async (event, session) => {
+                if (event === 'SIGNED_IN' && session) {
+                    showDashboard();
+                    await loadData();
+                    renderAll();
+                } else if (event === 'SIGNED_OUT') {
+                    showAuth();
+                }
+            });
         }
         
-        // Load/Save Data
-        function loadData() {
-            const saved = localStorage.getItem(CONFIG.dataKey);
-            if (saved) {
-                data = { ...defaultData, ...JSON.parse(saved) };
+        // Auth Functions
+        async function signIn() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('auth-error');
+            
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) {
+                errorEl.textContent = error.message;
+                errorEl.style.display = 'block';
             }
         }
         
-        function saveData() {
-            localStorage.setItem(CONFIG.dataKey, JSON.stringify(data));
+        async function signUp() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('auth-error');
+            
+            const { error } = await supabaseClient.auth.signUp({ email, password });
+            if (error) {
+                errorEl.textContent = error.message;
+                errorEl.style.display = 'block';
+            } else {
+                errorEl.textContent = 'Check your email for confirmation!';
+                errorEl.style.color = '#10b981';
+                errorEl.style.display = 'block';
+            }
         }
         
-        // Render All Sections
+        async function signOut() {
+            await supabaseClient.auth.signOut();
+        }
+        
+        function showAuth() {
+            document.getElementById('auth-screen').style.display = 'flex';
+            document.getElementById('dashboard').style.display = 'none';
+        }
+        
+        function showDashboard() {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+        }
+        
+        // Data Functions
+        async function loadData() {
+            const { data: row } = await supabase.from('dashboard_data').select('*').eq('id', 'regaia').single();
+            if (row) {
+                data = { ...defaultData, ...row };
+            }
+        }
+        
+        async function saveData() {
+            await supabase.from('dashboard_data').upsert({ 
+                id: 'regaia', 
+                ...data,
+                updated_at: new Date().toISOString()
+            });
+        }
+        
+        // Render Functions
         function renderAll() {
             renderStreak();
             renderAppStatus();
@@ -548,74 +602,23 @@
             document.getElementById('gold-change').textContent = data.goldChange;
         }
         
-        // Toggle Checkbox
-        function toggleCheck(type, idx) {
+        async function toggleCheck(type, idx) {
             if (type === 'app') {
                 data.appChecklist[idx].checked = !data.appChecklist[idx].checked;
             } else if (type === 'merchant') {
                 data.merchantsList[idx].done = !data.merchantsList[idx].done;
             }
-            saveData();
+            await saveData();
             renderAll();
         }
         
-        // Toggle Edit Mode
         function toggleEdit(btn) {
             isEditMode = !isEditMode;
             btn.textContent = isEditMode ? 'Done' : 'Edit';
             btn.classList.toggle('active', isEditMode);
         }
         
-        // Setup Inline Editing
-        function setupInlineEditing() {
-            document.getElementById('todays-task').addEventListener('change', (e) => {
-                data.todaysTask = e.target.value;
-                saveData();
-            });
-        }
-        
-        // Auth Functions
-        async function checkAuth() {
-            const password = document.getElementById('auth-password').value;
-            const errorEl = document.getElementById('auth-error');
-            
-            if (!CONFIG.passwordHash) {
-                // First time - set password
-                const encoder = new TextEncoder();
-                const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(password));
-                const hashArray = Array.from(new Uint8Array(hashBuffer));
-                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-                CONFIG.passwordHash = hashHex;
-                localStorage.setItem('regaia_auth_hash', hashHex);
-                showDashboard();
-            } else {
-                // Verify password
-                const encoder = new TextEncoder();
-                const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(password));
-                const hashArray = Array.from(new Uint8Array(hashBuffer));
-                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-                
-                if (hashHex === CONFIG.passwordHash) {
-                    showDashboard();
-                } else {
-                    errorEl.style.display = 'block';
-                }
-            }
-        }
-        
-        function showDashboard() {
-            document.getElementById('auth-overlay').classList.add('hidden');
-            document.getElementById('dashboard').style.display = 'block';
-        }
-        
-        // Load saved hash on init
-        window.onload = async () => {
-            const savedHash = localStorage.getItem('regaia_auth_hash');
-            if (savedHash) {
-                CONFIG.passwordHash = savedHash;
-            }
-            init();
-        };
+        init();
     </script>
 </body>
 </html>
