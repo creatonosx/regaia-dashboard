@@ -12,7 +12,7 @@ const log = (msg) => output.textContent += msg + '\n';
 
 const SUPABASE_URL = 'https://fkhyriqnxpnckwoxafrv.supabase.co';
 const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZraHlyaXFueHBuY2t3b3hhZnJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5ODYxOTMsImV4cCI6MjA4NTU2MjE5M30._c5ZLJoJpvdzumz4HT8PbqvAUO0nO3DJOtq8EMFtd6E';
-const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZraHlyaXFueHBuY2t3b3hhZnJ2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTk4NjE5MywiZXhwIjoyMDg1NTYyMTkzfQ.fIfoFisSi4KkxJgoNsa_fL5e7uYKyRqSiDifIwjGmp4';
+// SERVICE_KEY removed for security - use .env file for sensitive keys
 
 log('1. Creating client...');
 const client = createClient(SUPABASE_URL, ANON_KEY);
