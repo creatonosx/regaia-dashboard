@@ -145,7 +145,17 @@
     <script>
         const SUPABASE_URL = 'https://fkhyriqnxpnckwoxafrv.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZraHlyaXFueHBuY2t3b3hhZnJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5ODYxOTMsImV4cCI6MjA4NTU2MjE5M30._c5ZLJoJpvdzumz4HT8PbqvAUO0nO3DJOtq8EMFtd6E';
-        
+
+        // Initialize Supabase client
+        let supabaseClient = null;
+        try {
+            if (typeof supabase !== 'undefined' && supabase.createClient) {
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+        } catch(e) {
+            console.warn('Supabase init failed:', e);
+        }
+
         let data = {
             streak: 0, appStatus: 'In Review', appDay: 3, playersCurrent: 0, playersTarget: 100, merchantsCurrent: 2,
             checklist: [{label:'App Submitted',checked:true},{label:'IAP Configured',checked:true},{label:'ASO Keywords',checked:false},{label:'Press Kit',checked:false},{label:'Launch Content',checked:false}],
@@ -169,11 +179,35 @@
         
         function saveData() {
             localStorage.setItem('regaia_dashboard', JSON.stringify(data));
-            if (typeof supabase !== 'undefined') {
-                supabase.from('regaia_dashboard').upsert({
-                    id: 'main', data: data, updated_at: new Date().toISOString()
-                }, { upsert: true }).catch(() => {});
-            }
+            syncToSupabase();
+        }
+
+        function syncToSupabase() {
+            if (!supabaseClient) return;
+            supabaseClient.from('regaia_dashboard').upsert({
+                id: 'main', data: data, updated_at: new Date().toISOString()
+            }).then(function(result) {
+                if (result.error) console.warn('Supabase sync error:', result.error.message);
+            }).catch(function(e) {
+                console.warn('Supabase sync failed:', e);
+            });
+        }
+
+        function loadFromSupabase() {
+            if (!supabaseClient) return;
+            supabaseClient.from('regaia_dashboard').select('data').eq('id', 'main').maybeSingle()
+                .then(function(result) {
+                    if (result.data && result.data.data) {
+                        // Merge Supabase data with local (Supabase takes priority if newer)
+                        const remoteData = result.data.data;
+                        data = { ...data, ...remoteData };
+                        localStorage.setItem('regaia_dashboard', JSON.stringify(data));
+                        renderAll();
+                        console.log('Loaded from Supabase');
+                    }
+                }).catch(function(e) {
+                    console.warn('Supabase load failed:', e);
+                });
         }
         
         function renderAll() {
@@ -294,16 +328,31 @@
         });
         
         document.getElementById('logoutBtn').addEventListener('click', function() {
-            if (typeof supabase !== 'undefined') {
-                supabase.auth.signOut().then(function() { location.reload(); });
+            // Clear local data and reload
+            localStorage.removeItem('regaia_dashboard');
+            if (supabaseClient) {
+                supabaseClient.auth.signOut().then(function() {
+                    location.reload();
+                }).catch(function() {
+                    location.reload();
+                });
             } else {
                 location.reload();
             }
         });
         
-        ['contentToday', 'contentTomorrow', 'todaysTask', 'competitor0', 'competitor1', 'competitor2', 'competitor3'].forEach(function(id) {
+        ['contentToday', 'contentTomorrow', 'todaysTask'].forEach(function(id) {
             document.getElementById(id).addEventListener('change', function() {
                 data[id] = this.value;
+                saveData();
+            });
+        });
+
+        // Fix competitor data binding - save to competitors array, not data.competitor0
+        ['competitor0', 'competitor1', 'competitor2', 'competitor3'].forEach(function(id, idx) {
+            document.getElementById(id).addEventListener('change', function() {
+                if (!data.competitors) data.competitors = ['', '', '', ''];
+                data.competitors[idx] = this.value;
                 saveData();
             });
         });
@@ -315,8 +364,10 @@
             });
         });
         
+        // Initialize: load local data first, then sync with Supabase
         loadData();
         renderAll();
+        loadFromSupabase(); // Load from cloud (will merge and re-render if data found)
     </script>
 </body>
 </html>
