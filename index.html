@@ -92,9 +92,88 @@
             .competitor-item { padding: 16px; }
             .competitor-item strong { font-size: 0.9rem; }
         }
+        /* Login Screen */
+        #login-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        #login-screen h1 { font-size: 1.5rem; margin-bottom: 8px; }
+        #login-screen p { color: #888; margin-bottom: 24px; font-size: 0.9rem; }
+        .login-box {
+            background: #242424;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 24px;
+            width: 100%;
+            max-width: 360px;
+        }
+        .login-box input {
+            width: 100%;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 12px;
+            color: #fff;
+            font-size: 1rem;
+            margin-bottom: 12px;
+        }
+        .login-box input:focus { outline: none; border-color: #10b981; }
+        .login-box button {
+            width: 100%;
+            background: #10b981;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 12px;
+        }
+        .login-box button:hover { background: #059669; }
+        .login-box button.secondary {
+            background: transparent;
+            border: 1px solid #444;
+            color: #888;
+        }
+        .login-box button.secondary:hover { border-color: #666; color: #fff; }
+        .login-error { color: #ef4444; font-size: 0.85rem; margin-bottom: 12px; display: none; }
+        .login-toggle { text-align: center; color: #888; font-size: 0.85rem; margin-top: 12px; }
+        .login-toggle a { color: #10b981; cursor: pointer; }
+        #loading-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: #888;
+        }
     </style>
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">Loading...</div>
+
+    <!-- Login Screen -->
+    <div id="login-screen" style="display: none;">
+        <h1>🚀 Regaia Mission Control</h1>
+        <p>Sign in to access your dashboard</p>
+        <div class="login-box">
+            <div id="login-error" class="login-error"></div>
+            <input type="email" id="login-email" placeholder="Email">
+            <input type="password" id="login-password" placeholder="Password">
+            <button id="login-btn">Sign In</button>
+            <button id="signup-btn" class="secondary">Create Account</button>
+            <div class="login-toggle">
+                <a id="magic-link-btn">Send magic link instead</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
     <div id="dashboard">
         <header>
             <div>
@@ -163,9 +242,148 @@
             contentToday: 'Behind-the-scenes dev screenshot', contentTomorrow: 'Gacha pull teaser video',
             todaysTask: 'Draft 5 tweets showcasing gacha animation', competitors: ['', '', '', '']
         };
-        
-        // Show dashboard immediately
-        document.getElementById('dashboard').style.display = 'block';
+
+        let currentUser = null;
+
+        // Auth functions
+        function showLoading() {
+            document.getElementById('loading-screen').style.display = 'flex';
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'none';
+        }
+
+        function showLogin() {
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('dashboard').style.display = 'none';
+        }
+
+        function showDashboard() {
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+        }
+
+        function showLoginError(msg) {
+            const el = document.getElementById('login-error');
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+
+        function hideLoginError() {
+            document.getElementById('login-error').style.display = 'none';
+        }
+
+        async function checkAuth() {
+            if (!supabaseClient) {
+                showLogin();
+                return;
+            }
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (session && session.user) {
+                    currentUser = session.user;
+                    showDashboard();
+                    loadData();
+                    renderAll();
+                    loadFromSupabase();
+                } else {
+                    showLogin();
+                }
+            } catch(e) {
+                console.warn('Auth check failed:', e);
+                showLogin();
+            }
+        }
+
+        async function handleLogin() {
+            hideLoginError();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            if (!email || !password) {
+                showLoginError('Please enter email and password');
+                return;
+            }
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) {
+                    showLoginError(error.message);
+                } else if (data.user) {
+                    currentUser = data.user;
+                    showDashboard();
+                    loadData();
+                    renderAll();
+                    loadFromSupabase();
+                }
+            } catch(e) {
+                showLoginError('Login failed: ' + e.message);
+            }
+        }
+
+        async function handleSignup() {
+            hideLoginError();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            if (!email || !password) {
+                showLoginError('Please enter email and password');
+                return;
+            }
+            if (password.length < 6) {
+                showLoginError('Password must be at least 6 characters');
+                return;
+            }
+            try {
+                const { data, error } = await supabaseClient.auth.signUp({ email, password });
+                if (error) {
+                    showLoginError(error.message);
+                } else if (data.user) {
+                    if (data.user.identities && data.user.identities.length === 0) {
+                        showLoginError('Account already exists. Try signing in.');
+                    } else {
+                        showLoginError('Check your email to confirm your account!');
+                        document.getElementById('login-error').style.color = '#10b981';
+                    }
+                }
+            } catch(e) {
+                showLoginError('Signup failed: ' + e.message);
+            }
+        }
+
+        async function handleMagicLink() {
+            hideLoginError();
+            const email = document.getElementById('login-email').value.trim();
+            if (!email) {
+                showLoginError('Please enter your email');
+                return;
+            }
+            try {
+                const { error } = await supabaseClient.auth.signInWithOtp({ email });
+                if (error) {
+                    showLoginError(error.message);
+                } else {
+                    showLoginError('Magic link sent! Check your email.');
+                    document.getElementById('login-error').style.color = '#10b981';
+                }
+            } catch(e) {
+                showLoginError('Failed to send magic link: ' + e.message);
+            }
+        }
+
+        // Listen for auth state changes (handles magic link redirect)
+        if (supabaseClient) {
+            supabaseClient.auth.onAuthStateChange(function(event, session) {
+                if (event === 'SIGNED_IN' && session) {
+                    currentUser = session.user;
+                    showDashboard();
+                    loadData();
+                    renderAll();
+                    loadFromSupabase();
+                } else if (event === 'SIGNED_OUT') {
+                    currentUser = null;
+                    showLogin();
+                }
+            });
+        }
         
         function loadData() {
             const local = localStorage.getItem('regaia_dashboard');
@@ -327,18 +545,23 @@
             }
         });
         
-        document.getElementById('logoutBtn').addEventListener('click', function() {
-            // Clear local data and reload
-            localStorage.removeItem('regaia_dashboard');
+        document.getElementById('logoutBtn').addEventListener('click', async function() {
             if (supabaseClient) {
-                supabaseClient.auth.signOut().then(function() {
-                    location.reload();
-                }).catch(function() {
-                    location.reload();
-                });
-            } else {
-                location.reload();
+                await supabaseClient.auth.signOut();
             }
+            localStorage.removeItem('regaia_dashboard');
+            currentUser = null;
+            showLogin();
+        });
+
+        // Login form handlers
+        document.getElementById('login-btn').addEventListener('click', handleLogin);
+        document.getElementById('signup-btn').addEventListener('click', handleSignup);
+        document.getElementById('magic-link-btn').addEventListener('click', handleMagicLink);
+
+        // Allow Enter key to submit login
+        document.getElementById('login-password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') handleLogin();
         });
         
         ['contentToday', 'contentTomorrow', 'todaysTask'].forEach(function(id) {
@@ -364,10 +587,8 @@
             });
         });
         
-        // Initialize: load local data first, then sync with Supabase
-        loadData();
-        renderAll();
-        loadFromSupabase(); // Load from cloud (will merge and re-render if data found)
+        // Initialize: check auth first
+        checkAuth();
     </script>
 </body>
 </html>
