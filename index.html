@@ -166,10 +166,6 @@
             <input type="email" id="login-email" placeholder="Email">
             <input type="password" id="login-password" placeholder="Password">
             <button id="login-btn">Sign In</button>
-            <button id="signup-btn" class="secondary">Create Account</button>
-            <div class="login-toggle">
-                <a id="magic-link-btn">Send magic link instead</a>
-            </div>
         </div>
     </div>
 
@@ -556,12 +552,11 @@
 
         // Login form handlers
         document.getElementById('login-btn').addEventListener('click', handleLogin);
-        document.getElementById('signup-btn').addEventListener('click', handleSignup);
-        document.getElementById('magic-link-btn').addEventListener('click', handleMagicLink);
-
-        // Allow Enter key to submit login
         document.getElementById('login-password').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') handleLogin();
+        });
+        document.getElementById('login-email').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') document.getElementById('login-password').focus();
         });
         
         ['contentToday', 'contentTomorrow', 'todaysTask'].forEach(function(id) {
